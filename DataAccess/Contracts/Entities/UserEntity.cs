@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccess.Contracts.Entities
+﻿namespace DataAccess.Contracts.Entities
 {
-    public class UserEntity
+    public class UserEntity : IEntity
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         public string Email { get; set; }
         public string Passsword { get; set; }
@@ -18,6 +10,13 @@ namespace DataAccess.Contracts.Entities
         public UserEntity()
         {
 
+        }
+
+        public UserEntity(string email, string passsword, string fullName)
+        {
+            Email = email;
+            Passsword = passsword;
+            FullName = fullName;
         }
 
         public UserEntity(long id, string email, string passsword, string fullName)

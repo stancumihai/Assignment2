@@ -9,7 +9,6 @@ namespace BusinessLayer.Contracts
     public interface IGenericService<T>
     {
         List<T> GetAll();
-        List<T> GetAllByName(string name);
         void Add(T t);
         void Delete(long Id);
         T GetById(long Id);

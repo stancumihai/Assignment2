@@ -18,7 +18,7 @@ namespace SchoolApplication.Controller
         private readonly IStudentService StudentService;
         private readonly IMapper Mapper;
         private ILogger Logger;
-        public StudentController(IStudentService StudentService,IMapper Mapper,ILoggerFactory Logger)
+        public StudentController(IStudentService StudentService, IMapper Mapper, ILoggerFactory Logger)
         {
             this.Logger = Logger.CreateLogger("StudentControllerLogger");
             this.StudentService = StudentService;
@@ -35,7 +35,7 @@ namespace SchoolApplication.Controller
         public IActionResult Post(StudentDto StudentDto)
         {
             StudentService.Add(Mapper.Map<StudentModel>(StudentDto));
-            Logger.LogInformation(StudentDto.Id.ToString());  
+            Logger.LogInformation(StudentDto.Id.ToString());
             return Ok();
         }
 
@@ -49,6 +49,32 @@ namespace SchoolApplication.Controller
             }
             var studentDto = Mapper.Map<StudentDto>(studentModel);
             return Ok(studentDto);
+        }
+
+        [HttpDelete("{Id}")]
+        public IActionResult Delete([FromRoute] long Id)
+        {
+            var studentModel = StudentService.GetById(Id);
+            if (studentModel == null)
+            {
+                return NotFound();
+            }
+            StudentService.Delete(Id);
+            return Ok();
+        }
+
+        [HttpPut("{Id}")]
+        public IActionResult Update([FromRoute] long Id, [FromBody] StudentDto StudentDto)
+        {
+            var studentModel = StudentService.GetById(Id);
+            if (studentModel == null)
+            {
+                return NotFound();
+            }
+            var studentModelUpdated = Mapper.Map<StudentModel>(StudentDto);
+            studentModelUpdated.Id = Id;
+            StudentService.Update(Id, studentModelUpdated);
+            return Ok();
         }
     }
 }

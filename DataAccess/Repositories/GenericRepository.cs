@@ -1,59 +1,37 @@
 ﻿using DataAccess.Contracts;
-using System;
-using System.Collections.Generic;
+using DataAccess.UnitOfWorkLogic;
+using System.Data.Entity;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 
 namespace DataAccess.Repositories
 {
-    public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
+    public class GenericRepository : IGenericRepository
     {
-
-        protected readonly SchoolDbContext Context;
-
-
-        public GenericRepository(SchoolDbContext Context)
+        private readonly SchoolDbContext context;
+        public GenericRepository(SchoolDbContext context)
         {
-            this.Context = Context;
+            this.context = context;
         }
 
-        public void Add(TEntity entity)
+        public IUnitOfWork CreateUnitOFWork()
         {
-            Context.Set<TEntity>().Add(entity);
+            IUnitOfWorkFactory unitOfWorkFactory = new UnitOfWorkFactory(context);
+            return unitOfWorkFactory.CreateUnitOfWork();
+        }
+
+        public IQueryable<T> Get<T>() where T : class
+        {
+            return this.context.Set<T>().AsNoTracking();
         }
 
         public IUnitOfWork CreateUnitOfWork()
         {
-            
-            //return new UnitOfWork();
+            return new UnitOfWork(context);
         }
 
-        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
+        protected SchoolDbContext Context
         {
-            return Context.Set<TEntity>().Where(predicate);
-        }
-
-        public TEntity Get(long id)
-        {
-            return Context.Set<TEntity>().Find(id);
-        }
-
-        public IEnumerable<TEntity> GetAll()
-        {
-            return Context.Set<TEntity>().ToList();
-        }
-
-        public void Remove(TEntity entity)
-        {
-            Context.Set<TEntity>().Remove(entity);
-        }
-
-
-        public void Update(TEntity entity)
-        {
-            Context.ChangeTracker.Clear();
-            Context.Set<TEntity>().Update(entity);
+            get { return this.context; }
         }
     }
 }

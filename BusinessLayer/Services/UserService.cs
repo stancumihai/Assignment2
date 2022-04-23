@@ -1,85 +1,72 @@
 ﻿using AutoMapper;
 using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
-using DataAccess;
+using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
-using Microsoft.Extensions.Logging;
+using DataAccess.UnitOfWorkLogic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace BusinessLayer.Services
 {
     public class UserService : IUserService
     {
-        private IUnitOfWork UnitOfWork;
-        private IMapper Mapper;
-        private ILogger Logger;
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, ILoggerFactory Logger)
+        private readonly IGenericRepository GenericRepository;
+        private readonly IMapper Mapper;
+        public UserService(IGenericRepository GenericRepository, IMapper Mapper)
         {
-            UnitOfWork = unitOfWork;
-            Mapper = mapper;
-            this.Logger = Logger.CreateLogger("UserServiceLogger");
+            this.GenericRepository = GenericRepository;
+            this.Mapper = Mapper;
         }
 
-        public void Add(UserModel User)
+        public void Add(UserModel t)
         {
-            using (UnitOfWork)
-            {
-                var userEntity = Mapper.Map<UserEntity>(User);
-                UnitOfWork.UserRepository.Add(userEntity);
-                Logger.LogInformation(userEntity.ToString());
-                UnitOfWork.Complete();
-            }
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var userEntity = Mapper.Map<UserEntity>(t);
+            uof.Add<UserEntity>(userEntity);
+            uof.SaveChanges();
         }
 
         public void Delete(long Id)
         {
-            using (UnitOfWork)
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var userEntity = uof.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
+            if (userEntity != null)
             {
-                var userEntity = UnitOfWork.UserRepository.Get(Id);
-                if (userEntity != null)
-                {
-                    UnitOfWork.UserRepository.Remove(userEntity);
-                    UnitOfWork.Complete();
-                }
+                uof.Delete<UserEntity>(userEntity);
             }
+            uof.SaveChanges();
         }
 
         public List<UserModel> GetAll()
         {
-            using (UnitOfWork)
-            {
-                List<UserEntity> allUsers = UnitOfWork.UserRepository.GetAll().ToList();
-                return Mapper.Map<List<UserModel>>(allUsers);
-            }
-        }
-
-        public List<UserModel> GetAllByName(string name)
-        {
-            throw new NotImplementedException();
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var userEntities = uof.Get<UserEntity>();
+            var userModels = Mapper.Map<List<UserModel>>(userEntities);
+            uof.SaveChanges();
+            return userModels;
         }
 
         public UserModel GetById(long Id)
         {
-            var userEntity = UnitOfWork.UserRepository.Get(Id);
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var userEntity = uof.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
             return Mapper.Map<UserModel>(userEntity);
         }
 
-
         public void Update(long Id, UserModel t)
         {
-            using (UnitOfWork)
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var userEntity = uof.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
+            if (userEntity != null)
             {
-                var userToUpdate = UnitOfWork.UserRepository.Get(Id);
-                Logger.LogInformation("userToUpdate:" + userToUpdate.ToString());
-                if (userToUpdate != null)
-                {
-                    var userEntity = Mapper.Map<UserEntity>(t);
-                    userEntity.Id = Id;
-                    Logger.LogInformation("userEntity:" + userEntity.ToString());
-                    UnitOfWork.UserRepository.Update(userEntity);
-                }
+                var newUserEntity = Mapper.Map<UserEntity>(t);
+                t.Id = Id;
+                uof.Update<UserEntity>(newUserEntity);
+                uof.SaveChanges();
             }
         }
     }

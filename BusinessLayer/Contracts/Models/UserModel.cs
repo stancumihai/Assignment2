@@ -16,6 +16,13 @@ namespace BusinessLayer.Contracts.Models
 
         }
 
+        public UserModel(string email, string passsword, string fullName)
+        {
+            Email = email;
+            Passsword = passsword;
+            FullName = fullName;
+        }
+
         public UserModel(long id, string email, string passsword, string fullName)
         {
             Id = id;

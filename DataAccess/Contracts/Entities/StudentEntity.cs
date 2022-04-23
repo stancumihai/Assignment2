@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess.Contracts.Entities
 {
-    public class StudentEntity
+    public class StudentEntity : IEntity
     {
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -28,6 +24,12 @@ namespace DataAccess.Contracts.Entities
         public StudentEntity()
         {
 
+        }
+
+        public StudentEntity(string group, string hobby)
+        {
+            Group = group;
+            Hobby = hobby;
         }
 
         public StudentEntity(long id, UserEntity user, string group, string hobby)

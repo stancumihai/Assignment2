@@ -21,11 +21,9 @@ namespace SchoolApplication.Profiles
             CreateMap<ProfessorEntity, ProfessorModel>().ReverseMap();
             CreateMap<ProfessorModel, ProfessorDto>().ReverseMap();
 
-            CreateMap<StudentEntity, StudentModel>()
-             .ForMember(dest => dest.User, opts => opts.Ignore()).ReverseMap();
+            CreateMap<StudentEntity, StudentModel>().ReverseMap();
             
-            CreateMap<StudentModel, StudentDto>()
-             .ForMember(dest => dest.User, opts => opts.Ignore()).ReverseMap();
+            CreateMap<StudentModel, StudentDto>().ReverseMap();
 
         }
     }

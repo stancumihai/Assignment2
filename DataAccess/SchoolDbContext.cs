@@ -1,16 +1,10 @@
 ﻿using DataAccess.Contracts.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess
 {
     public class SchoolDbContext : DbContext
     {
-
         public DbSet<UserEntity> UserEntities { get; set; }
         public DbSet<ProfessorEntity> ProfessorEntities { get; set; }
         public DbSet<StudentEntity> StudentEntities { get; set; }

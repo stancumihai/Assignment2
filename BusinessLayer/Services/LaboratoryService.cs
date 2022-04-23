@@ -1,72 +1,72 @@
 ﻿using AutoMapper;
 using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
-using DataAccess;
+using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
-using Microsoft.Extensions.Logging;
+using DataAccess.UnitOfWorkLogic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace BusinessLayer.Services
 {
     public class LaboratoryService : ILaboratoryService
     {
+        private readonly IGenericRepository GenericRepository;
+        private readonly IMapper Mapper;
 
-        private IUnitOfWork UnitOfWork;
-        private IMapper Mapper;
-        private ILogger Logger;
-
-        public LaboratoryService(IUnitOfWork unitOfWork, IMapper mapper, ILoggerFactory Logger)
+        public LaboratoryService(IGenericRepository GenericRepository, IMapper Mapper)
         {
-            this.Logger = Logger.CreateLogger("LaboratoryServiceLogger");
-            UnitOfWork = unitOfWork;
-            Mapper = mapper;
+            this.GenericRepository = GenericRepository;
+            this.Mapper = Mapper;
         }
 
         public void Add(LaboratoryModel t)
         {
-            using (UnitOfWork)
-            {
-                var labEntity = Mapper.Map<LaboratoryEntity>(t);
-                UnitOfWork.LaboratoryRepository.Add(labEntity);
-                UnitOfWork.Complete();
-            }
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var labEntity = Mapper.Map<LaboratoryEntity>(t);
+            uof.Add<LaboratoryEntity>(labEntity);
+            uof.SaveChanges();
         }
 
         public void Delete(long Id)
         {
-            throw new NotImplementedException();
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var labEntity = uof.Get<LaboratoryEntity>().Where(lab => lab.Id == Id).FirstOrDefault();
+            if (labEntity != null)
+            {
+                uof.Delete<LaboratoryEntity>(labEntity);
+                uof.SaveChanges();
+            }
         }
 
         public List<LaboratoryModel> GetAll()
         {
-            using (UnitOfWork)
-            {
-                var labEntities = UnitOfWork.LaboratoryRepository.GetAll().ToList();
-                return Mapper.Map<List<LaboratoryModel>>(labEntities);
-            }
-
-        }
-
-        public List<LaboratoryModel> GetAllByName(string name)
-        {
-            throw new NotImplementedException();
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var labEntities = uof.Get<LaboratoryEntity>();
+            var labModels = Mapper.Map<List<LaboratoryModel>>(labEntities);
+            return labModels;
         }
 
         public LaboratoryModel GetById(long Id)
         {
-            throw new NotImplementedException();
-        }
-
-        public void Update(LaboratoryModel t)
-        {
-            throw new NotImplementedException();
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var labEntity = uof.Get<LaboratoryEntity>().Where(user => user.Id == Id).FirstOrDefault();
+            return Mapper.Map<LaboratoryModel>(labEntity);
         }
 
         public void Update(long Id, LaboratoryModel t)
         {
-            throw new NotImplementedException();
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var labEntity = uof.Get<LaboratoryEntity>().Where(lab => lab.Id == Id).FirstOrDefault();
+            if (labEntity != null)
+            {
+                var newLabEntity = Mapper.Map<LaboratoryEntity>(t);
+                t.Id = Id;
+                uof.Update<LaboratoryEntity>(newLabEntity);
+                uof.SaveChanges();
+            }
         }
     }
 }

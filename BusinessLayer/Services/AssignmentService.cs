@@ -1,71 +1,71 @@
 ﻿using AutoMapper;
 using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
-using DataAccess;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
+using DataAccess.UnitOfWorkLogic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace BusinessLayer.Services
 {
     public class AssignmentService : IAssignmentService
     {
-        private readonly IUnitOfWork UnitOfWork;
-        private readonly IGenericRepository<AssignmentEntity> GenericRepository;
-        //inject unit of work
+        private readonly IGenericRepository GenericRepository;
         private readonly IMapper Mapper;
-        public AssignmentService(IUnitOfWork UnitOfWork, IMapper Mapper, IGenericRepository<AssignmentEntity> GenericRepository)
+
+        public AssignmentService(IGenericRepository genericRepository, IMapper mapper)
         {
-            this.UnitOfWork = UnitOfWork;
-            this.Mapper = Mapper;
-            this.GenericRepository = GenericRepository;
+            GenericRepository = genericRepository;
+            Mapper = mapper;
         }
 
-        public void Add(AssignmentModel assignment)
+        public void Add(AssignmentModel t)
         {
-
-            using (UnitOfWork)
-            {
-                var assignmentEntity = Mapper.Map<AssignmentEntity>(assignment);
-                UnitOfWork.AssigmentRepository.Add(assignmentEntity);
-            }
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            uof.Add<AssignmentEntity>(Mapper.Map<AssignmentEntity>(t));
+            uof.SaveChanges();
         }
 
         public void Delete(long Id)
         {
-            throw new NotImplementedException();
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var assignmentEntity = uof.Get<AssignmentEntity>().Where(assign => assign.Id == Id).FirstOrDefault();
+            if (assignmentEntity != null)
+            {
+                uof.Delete<AssignmentEntity>(assignmentEntity);
+                uof.SaveChanges();
+            }
         }
 
         public List<AssignmentModel> GetAll()
         {
-            using (UnitOfWork)
-            {
-                List<AssignmentEntity> allAssignments = UnitOfWork.AssigmentRepository.GetAll().ToList();
-                UnitOfWork.Complete();
-                return Mapper.Map<List<AssignmentModel>>(allAssignments);
-            }
-        }
-
-        public List<AssignmentModel> GetAllByName(string name)
-        {
-            throw new NotImplementedException();
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var assignmentEntities = uof.Get<AssignmentEntity>();
+            var assignmentModels = Mapper.Map<List<AssignmentModel>>(assignmentEntities);
+            return assignmentModels;
         }
 
         public AssignmentModel GetById(long Id)
         {
-            throw new NotImplementedException();
-        }
-
-        public void Update(AssignmentModel t)
-        {
-            throw new NotImplementedException();
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var assignmentEntity = uof.Get<AssignmentEntity>().Where(assign => assign.Id == Id).FirstOrDefault();
+            return Mapper.Map<AssignmentModel>(assignmentEntity);
         }
 
         public void Update(long Id, AssignmentModel t)
         {
-            throw new NotImplementedException();
+            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
+            var assignmentEntity = uof.Get<AssignmentEntity>().Where(assign => assign.Id == Id).FirstOrDefault();
+            if (assignmentEntity != null)
+            {
+                var newAssignmentEntity = Mapper.Map<AssignmentEntity>(t);
+                t.Id = Id;
+                uof.Update<AssignmentEntity>(newAssignmentEntity);
+                uof.SaveChanges();
+            }
         }
     }
 }

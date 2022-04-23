@@ -16,6 +16,7 @@ using DataAccess;
 using DataAccess.Repositories;
 using DataAccess.Contracts;
 using BusinessLayer.Contracts;
+using DataAccess.UnitOfWorkLogic;
 using BusinessLayer.Services;
 
 namespace SchoolApplication
@@ -40,23 +41,17 @@ namespace SchoolApplication
             });
 
             services.AddAutoMapper(typeof(Startup));
-            services.AddDbContext<SchoolDbContext>(options => options.UseSqlServer(@"Server=.;Database=SchoolDatabase;Trusted_Connection=True;"));
+            services.AddDbContext<SchoolDbContext>(
+                options => options.UseSqlServer(@"Server=.;Database=SchoolDatabase;Trusted_Connection=True;")
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
            
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IUserService, UserService>();
-            
-            services.AddScoped<ILaboratoryRepository, LaboratoryRepository>();
+            services.AddScoped<IGenericRepository, GenericRepository>();
+            services.AddScoped<IUserService,UserService>();
             services.AddScoped<ILaboratoryService, LaboratoryService>();
-
-            services.AddScoped<IStudentRepository, StudentRepository>();
             services.AddScoped<IStudentService, StudentService>();
-
-            services.AddScoped<IProfessorRepository, ProfessorRepository>();
             services.AddScoped<IProfessorService, ProfessorService>();
-
-
-            services.AddScoped<IAssignmentRepository, AssignmentRepository>();
             services.AddScoped<IAssignmentService, AssignmentService>();
 
         }
