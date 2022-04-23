@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,6 +12,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataAccess;
+using DataAccess.Repositories;
+using DataAccess.Contracts;
+using BusinessLayer.Contracts;
+using BusinessLayer.Services;
 
 namespace SchoolApplication
 {
@@ -26,17 +32,39 @@ namespace SchoolApplication
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SchoolApplication", Version = "v1" });
             });
+
+            services.AddAutoMapper(typeof(Startup));
+            services.AddDbContext<SchoolDbContext>(options => options.UseSqlServer(@"Server=.;Database=SchoolDatabase;Trusted_Connection=True;"));
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+           
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserService, UserService>();
+            
+            services.AddScoped<ILaboratoryRepository, LaboratoryRepository>();
+            services.AddScoped<ILaboratoryService, LaboratoryService>();
+
+            services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<IStudentService, StudentService>();
+
+            services.AddScoped<IProfessorRepository, ProfessorRepository>();
+            services.AddScoped<IProfessorService, ProfessorService>();
+
+
+            services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+            services.AddScoped<IAssignmentService, AssignmentService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -47,6 +75,8 @@ namespace SchoolApplication
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
