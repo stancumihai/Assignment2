@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace BusinessLayer.Contracts
 {
@@ -10,9 +6,9 @@ namespace BusinessLayer.Contracts
     {
         List<T> GetAll();
         void Add(T t);
-        void Delete(long Id);
-        T GetById(long Id);
-        void Update(long Id, T t);
+        void Delete(int Id);
+        T GetById(int Id);
+        void Update(int Id, T t);
 
     }
 }

@@ -18,13 +18,8 @@ namespace SchoolApplication.Profiles
             CreateMap<LaboratoryEntity, LaboratoryModel>().ReverseMap();
             CreateMap<LaboratoryModel, LaboratoryDto>().ReverseMap();
 
-            CreateMap<ProfessorEntity, ProfessorModel>().ReverseMap();
-            CreateMap<ProfessorModel, ProfessorDto>().ReverseMap();
-
             CreateMap<StudentEntity, StudentModel>().ReverseMap();
-            
             CreateMap<StudentModel, StudentDto>().ReverseMap();
-
         }
     }
 }

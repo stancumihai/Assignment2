@@ -1,56 +1,49 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-
 namespace DataAccess.Contracts.Entities
 {
     public class StudentEntity : IEntity
     {
-
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; }
-
-        public long? UserId { get; set; }
+        public int Id { get; set; }
 
         [ForeignKey("UserId")]
         public virtual UserEntity User { get; set; }
+        public int? UserId { get; set; }
 
         public string Group { get; set; }
-
+        public string FullName { get; set; }
         public string Hobby { get; set; }
 
-        public List<StudentAssigmentsEntity> StudentAssigments { get; set; }
-        public List<StudentLaboratoriesEntity> StudentLaboratories { get; set; }
+        public ICollection<StudentLaboratoriesEntity> StudentLaboratories { get; set; }
 
         public StudentEntity()
         {
 
         }
 
-        public StudentEntity(string group, string hobby)
-        {
-            Group = group;
-            Hobby = hobby;
-        }
-
-        public StudentEntity(long id, UserEntity user, string group, string hobby)
+        public StudentEntity(int id, UserEntity user, int? userId, string group, string fullName, string hobby)
         {
             Id = id;
             User = user;
+            UserId = userId;
             Group = group;
+            FullName = fullName;
             Hobby = hobby;
         }
 
-        public StudentEntity(long id, long? userId, string group, string hobby)
+        public StudentEntity(int Id, UserEntity user, string group, string fullName, string hobby)
         {
-            Id = id;
-            UserId = userId;
+            this.Id = Id;
+            User = user;
             Group = group;
+            FullName = fullName;
             Hobby = hobby;
         }
+
 
         public override string ToString()
         {
-            return "Id :" + this.Id + " " + "Group:" + this.Group + " " + "Hobby: " + this.Hobby;
+            return "Id :" + this.Id + " " + "Group:" + this.Group + " " + "Hobby: " + this.Hobby + " " + "Hobby: " + this.FullName;
         }
     }
 }

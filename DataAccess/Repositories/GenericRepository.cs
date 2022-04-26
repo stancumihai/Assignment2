@@ -8,6 +8,7 @@ namespace DataAccess.Repositories
     public class GenericRepository : IGenericRepository
     {
         private readonly SchoolDbContext context;
+
         public GenericRepository(SchoolDbContext context)
         {
             this.context = context;
@@ -19,7 +20,7 @@ namespace DataAccess.Repositories
             return unitOfWorkFactory.CreateUnitOfWork();
         }
 
-        public IQueryable<T> Get<T>() where T : class
+        public IQueryable<T> Get<T>() where T : class, IEntity
         {
             return this.context.Set<T>().AsNoTracking();
         }

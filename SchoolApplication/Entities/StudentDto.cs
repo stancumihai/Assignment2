@@ -1,18 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace SchoolApplication.Entities
+﻿namespace SchoolApplication.Entities
 {
-    public class StudentDto 
+    public class StudentDto
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
 
-        public virtual UserDto User { get; set; }
+        public UserDto User { get; set; }
 
         public string Group { get; set; }
+        public string FullName { get; set; }
 
         public string Hobby { get; set; }
 
@@ -21,25 +16,18 @@ namespace SchoolApplication.Entities
 
         }
 
-        public StudentDto(string group, string hobby)
-        {
-            Group = group;
-            Hobby = hobby;
-        }
-
-        public StudentDto(long id, string group, string hobby)
-        {
-            Id = id;
-            Group = group;
-            Hobby = hobby;
-        }
-
-        public StudentDto(long id, UserDto user, string group, string hobby)
+        public StudentDto(int id, UserDto user, string group, string fullName, string hobby)
         {
             Id = id;
             User = user;
             Group = group;
+            FullName = fullName;
             Hobby = hobby;
+        }
+
+        public override string ToString()
+        {
+            return "Id :" + this.Id + " " + "User:" + this.User + " " + "Group:" + this.Group + " " + "Hobby: " + this.Hobby + " " + "FullName: " + this.FullName;
         }
     }
 }

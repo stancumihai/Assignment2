@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using BusinessLayer.Contracts;
+﻿using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,44 +13,50 @@ namespace SchoolApplication.Controller
     public class UserController : ControllerBase
     {
         private readonly IUserService UserService;
-        private readonly IMapper Mapper;
         private readonly ILogger Logger;
-        public UserController(IUserService UserService, IMapper Mapper, ILoggerFactory Logger)
+        public UserController(IUserService UserService, ILoggerFactory Logger)
         {
             this.Logger = Logger.CreateLogger("UserControllerLoger");
             this.UserService = UserService;
-            this.Mapper = Mapper;
         }
 
         [HttpGet]
         public IEnumerable<UserDto> GetAll()
         {
-            return Mapper.Map<List<UserDto>>(UserService.GetAll());
+            var userDtosList = new List<UserDto>();
+            var userModelsList = UserService.GetAll();
+            foreach (var userModel in userModelsList)
+            {
+                UserDto userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
+                userDtosList.Add(userDto);
+            }
+            return userDtosList;
         }
 
         [HttpPost]
-        public IActionResult Post(UserDto UserDto)
+        public IActionResult Post([FromBody] UserDto userDto)
         {
-            UserService.Add(Mapper.Map<UserModel>(UserDto));
-            return Ok();
+            UserModel userModel = new UserModel(userDto.Id, userDto.Email, userDto.Password);
+            UserService.Add(userModel);
+            return Ok(userModel);
         }
 
         [HttpGet("{Id}")]
-        public IActionResult GetById([FromRoute] long Id)
+        public IActionResult GetById([FromRoute] int Id)
         {
             var userModel = UserService.GetById(Id);
             if (userModel == null)
             {
                 return NotFound();
             }
-            var userDto = Mapper.Map<UserDto>(userModel);
+            UserDto userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
             return Ok(userDto);
         }
 
         [HttpDelete("{Id}")]
-        public IActionResult Delete([FromRoute] long Id)
+        public IActionResult Delete([FromRoute] int Id)
         {
-            var userModel = UserService.GetById(Id);
+            UserModel userModel = UserService.GetById(Id);
             if (userModel == null)
             {
                 return NotFound();
@@ -61,16 +66,14 @@ namespace SchoolApplication.Controller
         }
 
         [HttpPut("{Id}")]
-        public IActionResult Update([FromRoute] long Id, [FromBody] UserDto UserDto)
+        public IActionResult Update([FromRoute] int Id, [FromBody] UserDto userDto)
         {
-            var userModel = UserService.GetById(Id);
+            UserModel userModel = UserService.GetById(Id);
             if (userModel == null)
             {
                 return NotFound();
             }
-            var userModelUpdated = Mapper.Map<UserModel>(UserDto);
-            userModelUpdated.Id = Id;
-            Logger.LogInformation("userModelUpdated: ", userModelUpdated);
+            UserModel userModelUpdated = new UserModel(userDto.Id, userDto.Email, userDto.Password);
             UserService.Update(Id, userModelUpdated);
             return Ok();
         }

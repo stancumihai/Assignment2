@@ -1,13 +1,8 @@
-﻿using AutoMapper;
-using BusinessLayer.Contracts;
+﻿using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using SchoolApplication.Entities;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SchoolApplication.Controller
 {
@@ -16,27 +11,34 @@ namespace SchoolApplication.Controller
     public class StudentController : ControllerBase
     {
         private readonly IStudentService StudentService;
-        private readonly IMapper Mapper;
-        private ILogger Logger;
-        public StudentController(IStudentService StudentService, IMapper Mapper, ILoggerFactory Logger)
+        private readonly IUserService UserService;
+        public StudentController(IStudentService StudentService, IUserService UserService)
         {
-            this.Logger = Logger.CreateLogger("StudentControllerLogger");
             this.StudentService = StudentService;
-            this.Mapper = Mapper;
+            this.UserService = UserService;
         }
 
         [HttpGet]
         public IEnumerable<StudentDto> GetAll()
         {
-            return Mapper.Map<List<StudentDto>>(StudentService.GetAll());
+            var studentModels = StudentService.GetAll();
+            var studentDtos = new List<StudentDto>();
+            foreach (StudentModel studentModel in studentModels)
+            {
+                var userDto = new UserDto(studentModel.User.Id, studentModel.User.Email, studentModel.User.Password);
+                var studentDto = new StudentDto(studentModel.Id, userDto, studentModel.FullName, studentModel.Group, studentModel.Hobby);
+                studentDtos.Add(studentDto);
+            }
+            return studentDtos;
         }
 
         [HttpPost]
-        public IActionResult Post(StudentDto StudentDto)
+        public IActionResult Post(StudentCreateDto studentDto)
         {
-            StudentService.Add(Mapper.Map<StudentModel>(StudentDto));
-            Logger.LogInformation(StudentDto.Id.ToString());
-            return Ok();
+            var userModel = UserService.GetById(studentDto.UserId);
+            var studentModel = new StudentModel(studentDto.Id, userModel, studentDto.FullName, studentDto.Group, studentDto.Hobby);
+            StudentService.Add(studentModel);
+            return Ok(studentModel);
         }
 
         [HttpGet("{Id}")]
@@ -47,12 +49,14 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            var studentDto = Mapper.Map<StudentDto>(studentModel);
+            var userModel = studentModel.User;
+            var userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
+            var studentDto = new StudentDto(studentModel.Id, userDto, studentModel.FullName, studentModel.Group, studentModel.Hobby);
             return Ok(studentDto);
         }
 
         [HttpDelete("{Id}")]
-        public IActionResult Delete([FromRoute] long Id)
+        public IActionResult Delete([FromRoute] int Id)
         {
             var studentModel = StudentService.GetById(Id);
             if (studentModel == null)
@@ -64,15 +68,14 @@ namespace SchoolApplication.Controller
         }
 
         [HttpPut("{Id}")]
-        public IActionResult Update([FromRoute] long Id, [FromBody] StudentDto StudentDto)
+        public IActionResult Update([FromRoute] int Id, [FromBody] StudentCreateDto studentDto)
         {
             var studentModel = StudentService.GetById(Id);
             if (studentModel == null)
             {
                 return NotFound();
             }
-            var studentModelUpdated = Mapper.Map<StudentModel>(StudentDto);
-            studentModelUpdated.Id = Id;
+            var studentModelUpdated = new StudentModel(studentDto.Id, studentModel.User, studentDto.FullName, studentDto.Group, studentDto.Hobby);
             StudentService.Update(Id, studentModelUpdated);
             return Ok();
         }

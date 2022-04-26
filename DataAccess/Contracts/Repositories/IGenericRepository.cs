@@ -5,6 +5,6 @@ namespace DataAccess.Contracts
 {
     public interface IGenericRepository : IUnitOfWorkFactory
     {
-        IQueryable<T> Get<T>() where T : class;
+        IQueryable<T> Get<T>() where T : class, IEntity;
     }
 }

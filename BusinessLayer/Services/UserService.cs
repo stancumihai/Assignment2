@@ -1,70 +1,68 @@
-﻿using AutoMapper;
-using BusinessLayer.Contracts;
+﻿using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
-using DataAccess.UnitOfWorkLogic;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.Services
 {
     public class UserService : IUserService
     {
         private readonly IGenericRepository GenericRepository;
-        private readonly IMapper Mapper;
-        public UserService(IGenericRepository GenericRepository, IMapper Mapper)
+        public UserService(IGenericRepository GenericRepository)
         {
             this.GenericRepository = GenericRepository;
-            this.Mapper = Mapper;
         }
 
-        public void Add(UserModel t)
+        public void Add(UserModel userModel)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var userEntity = Mapper.Map<UserEntity>(t);
+            using var uof = GenericRepository.CreateUnitOfWork();
+            var userEntity = new UserEntity(userModel.Id, userModel.Email, userModel.Password);
             uof.Add<UserEntity>(userEntity);
             uof.SaveChanges();
         }
 
-        public void Delete(long Id)
+        public void Delete(int Id)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var userEntity = uof.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
+            using var uof = GenericRepository.CreateUnitOfWork();
+            var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
             if (userEntity != null)
             {
                 uof.Delete<UserEntity>(userEntity);
+                uof.SaveChanges();
             }
-            uof.SaveChanges();
         }
 
         public List<UserModel> GetAll()
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var userEntities = uof.Get<UserEntity>();
-            var userModels = Mapper.Map<List<UserModel>>(userEntities);
-            uof.SaveChanges();
+            var userEntities = GenericRepository.Get<UserEntity>();
+            var userModels = new List<UserModel>();
+            foreach (var userEntity in userEntities)
+            {
+                var userModel = new UserModel(userEntity.Id, userEntity.Email, userEntity.Password);
+                userModels.Add(userModel);
+            }
             return userModels;
         }
 
-        public UserModel GetById(long Id)
+        public UserModel GetById(int Id)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var userEntity = uof.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
-            return Mapper.Map<UserModel>(userEntity);
+            var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
+            var userModel = new UserModel(userEntity.Id, userEntity.Email, userEntity.Password);
+            return userModel;
         }
 
-        public void Update(long Id, UserModel t)
+        public void Update(int Id, UserModel userModel)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var userEntity = uof.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
+            using var uof = GenericRepository.CreateUnitOfWork();
+            var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
             if (userEntity != null)
             {
-                var newUserEntity = Mapper.Map<UserEntity>(t);
-                t.Id = Id;
+                var newUserEntity = new UserEntity(userModel.Id, userModel.Email, userModel.Password)
+                {
+                    Id = Id
+                };
                 uof.Update<UserEntity>(newUserEntity);
                 uof.SaveChanges();
             }

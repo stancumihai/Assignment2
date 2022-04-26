@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -6,7 +7,8 @@ namespace DataAccess.UnitOfWorkLogic
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly SchoolDbContext context;
+        private SchoolDbContext context;
+
         public UnitOfWork(SchoolDbContext context)
         {
             this.context = context;
@@ -25,7 +27,7 @@ namespace DataAccess.UnitOfWorkLogic
         public void Update<T>(T entity) where T : class
         {
             context.Set<T>().Update(entity);
-            
+
         }
         public void SaveChanges()
         {
@@ -37,14 +39,30 @@ namespace DataAccess.UnitOfWorkLogic
             return this;
         }
 
-        public IQueryable<T> Get<T>() where T : class
-        {
-            return context.Set<T>();
-        }
 
         public IQueryable<T> Find<T>(Expression<Func<T, bool>> expression) where T : class
         {
             return context.Set<T>().Where(expression);
+        }
+
+        private bool disposed = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                if (disposing)
+                {
+                    context.Dispose();
+                }
+            }
+            this.disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -1,39 +1,34 @@
-﻿using AutoMapper;
-using BusinessLayer.Contracts;
+﻿using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
-using DataAccess.UnitOfWorkLogic;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace BusinessLayer.Services
 {
     public class LaboratoryService : ILaboratoryService
     {
         private readonly IGenericRepository GenericRepository;
-        private readonly IMapper Mapper;
 
-        public LaboratoryService(IGenericRepository GenericRepository, IMapper Mapper)
+        public LaboratoryService(IGenericRepository GenericRepository)
         {
             this.GenericRepository = GenericRepository;
-            this.Mapper = Mapper;
+
         }
 
-        public void Add(LaboratoryModel t)
+        public void Add(LaboratoryModel laboratoryModel)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var labEntity = Mapper.Map<LaboratoryEntity>(t);
+            using var uof = GenericRepository.CreateUnitOfWork();
+            var labEntity = new LaboratoryEntity(laboratoryModel.Id, laboratoryModel.LaboratoryNumber, laboratoryModel.Date, laboratoryModel.Title, laboratoryModel.Objectives, laboratoryModel.Description);
             uof.Add<LaboratoryEntity>(labEntity);
             uof.SaveChanges();
         }
 
-        public void Delete(long Id)
+        public void Delete(int Id)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var labEntity = uof.Get<LaboratoryEntity>().Where(lab => lab.Id == Id).FirstOrDefault();
+            using var uof = GenericRepository.CreateUnitOfWork();
+            var labEntity = GenericRepository.Get<LaboratoryEntity>().Where(lab => lab.Id == Id).FirstOrDefault();
             if (labEntity != null)
             {
                 uof.Delete<LaboratoryEntity>(labEntity);
@@ -43,27 +38,30 @@ namespace BusinessLayer.Services
 
         public List<LaboratoryModel> GetAll()
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var labEntities = uof.Get<LaboratoryEntity>();
-            var labModels = Mapper.Map<List<LaboratoryModel>>(labEntities);
-            return labModels;
-        }
-
-        public LaboratoryModel GetById(long Id)
-        {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var labEntity = uof.Get<LaboratoryEntity>().Where(user => user.Id == Id).FirstOrDefault();
-            return Mapper.Map<LaboratoryModel>(labEntity);
-        }
-
-        public void Update(long Id, LaboratoryModel t)
-        {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var labEntity = uof.Get<LaboratoryEntity>().Where(lab => lab.Id == Id).FirstOrDefault();
-            if (labEntity != null)
+            var labEntities = GenericRepository.Get<LaboratoryEntity>().ToList();
+            var laboratoryModels = new List<LaboratoryModel>();
+            foreach (var laboratoryEntity in labEntities)
             {
-                var newLabEntity = Mapper.Map<LaboratoryEntity>(t);
-                t.Id = Id;
+                var laboratoryModel = new LaboratoryModel(laboratoryEntity.Id, laboratoryEntity.LaboratoryNumber, laboratoryEntity.Date, laboratoryEntity.Title, laboratoryEntity.Objectives, laboratoryEntity.Description);
+                laboratoryModels.Add(laboratoryModel);
+            }
+            return laboratoryModels;
+        }
+
+        public LaboratoryModel GetById(int Id)
+        {
+            var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(user => user.Id == Id).FirstOrDefault();
+            var laboratoryModel = new LaboratoryModel(laboratoryEntity.Id, laboratoryEntity.LaboratoryNumber, laboratoryEntity.Date, laboratoryEntity.Title, laboratoryEntity.Objectives, laboratoryEntity.Description);
+            return laboratoryModel;
+        }
+
+        public void Update(int Id, LaboratoryModel laboratoryModel)
+        {
+            using var uof = GenericRepository.CreateUnitOfWork();
+            var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(lab => lab.Id == Id).FirstOrDefault();
+            if (laboratoryEntity != null)
+            {
+                var newLabEntity = new LaboratoryEntity(laboratoryModel.Id, laboratoryModel.LaboratoryNumber, laboratoryModel.Date, laboratoryModel.Title, laboratoryModel.Objectives, laboratoryModel.Description);
                 uof.Update<LaboratoryEntity>(newLabEntity);
                 uof.SaveChanges();
             }

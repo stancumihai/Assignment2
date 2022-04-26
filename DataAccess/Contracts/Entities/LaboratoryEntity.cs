@@ -5,23 +5,21 @@ namespace DataAccess.Contracts.Entities
 {
     public class LaboratoryEntity : IEntity
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
 
-        public long LaboratoryNumber { get; set; }
+        public int LaboratoryNumber { get; set; }
         public DateTime Date { get; set; }
         public string Title { get; set; }
-        public string Objectives{ get; set; }
-        public string Description{ get; set; }
+        public string Objectives { get; set; }
+        public string Description { get; set; }
 
-        public List<StudentLaboratoriesEntity> StudentLaboratories { get; set; }
-        public List<ProfessorLaboratoriesEntity> ProfessorLaboratories { get; set; }
-
+        public ICollection<StudentLaboratoriesEntity> StudentLaboratories { get; set; }
         public LaboratoryEntity()
         {
 
         }
 
-        public LaboratoryEntity(long laboratoryNumber, DateTime date, string title, string objectives, string description)
+        public LaboratoryEntity(int laboratoryNumber, DateTime date, string title, string objectives, string description)
         {
             LaboratoryNumber = laboratoryNumber;
             Date = date;
@@ -30,7 +28,7 @@ namespace DataAccess.Contracts.Entities
             Description = description;
         }
 
-        public LaboratoryEntity(long id, long laboratoryNumber, DateTime date, string title, string objectives, string description)
+        public LaboratoryEntity(int id, int laboratoryNumber, DateTime date, string title, string objectives, string description)
         {
             Id = id;
             LaboratoryNumber = laboratoryNumber;
@@ -38,6 +36,15 @@ namespace DataAccess.Contracts.Entities
             Title = title;
             Objectives = objectives;
             Description = description;
+        }
+
+        public override string ToString()
+        {
+            return "Id :" + this.Id + " " + "LaboratoryNumber:" + this.LaboratoryNumber +
+                " " + "Date: " + this.Date +
+                " " + "Title: " + this.Title +
+                " " + "Objectives: " + this.Objectives +
+                " " + "Description: " + this.Description;
         }
     }
 }

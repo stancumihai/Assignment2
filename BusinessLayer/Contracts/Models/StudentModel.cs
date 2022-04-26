@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BusinessLayer.Contracts.Models
+﻿namespace BusinessLayer.Contracts.Models
 {
     public class StudentModel
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         public virtual UserModel User { get; set; }
 
@@ -14,35 +10,33 @@ namespace BusinessLayer.Contracts.Models
 
         public string Hobby { get; set; }
 
+        public string FullName { get; set; }
+
         public StudentModel()
         {
 
         }
 
-        public StudentModel(string group, string hobby)
+        public StudentModel(UserModel user, string group, string hobby, string fullName)
         {
+            User = user;
             Group = group;
             Hobby = hobby;
+            FullName = fullName;
         }
 
-        public StudentModel(long id, string group, string hobby)
-        {
-            Id = id;
-            Group = group;
-            Hobby = hobby;
-        }
-
-        public StudentModel(long id, UserModel user, string group, string hobby)
+        public StudentModel(int id, UserModel user, string group, string hobby, string fullName)
         {
             Id = id;
             User = user;
             Group = group;
             Hobby = hobby;
+            FullName = fullName;
         }
 
         public override string ToString()
         {
-            return "Id :" + this.Id + " " + "Group:" + this.Group + " " + "Hobby: " + this.Hobby;
+            return "Id :" + this.Id + "User:  " + this.User + "Group:" + this.Group + " " + "Hobby: " + this.Hobby + " " + "FullName: " + this.FullName;
         }
     }
 }

@@ -1,39 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BusinessLayer.Contracts.Models
+﻿namespace BusinessLayer.Contracts.Models
 {
     public class UserModel
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public string Email { get; set; }
-        public string Passsword { get; set; }
-        public string FullName { get; set; }
+        public string Password { get; set; }
 
         public UserModel()
         {
 
         }
 
-        public UserModel(string email, string passsword, string fullName)
-        {
-            Email = email;
-            Passsword = passsword;
-            FullName = fullName;
-        }
 
-        public UserModel(long id, string email, string passsword, string fullName)
+        public UserModel(int id, string email, string password)
         {
             Id = id;
             Email = email;
-            Passsword = passsword;
-            FullName = fullName;
+            Password = password;
         }
 
         public override string ToString()
         {
-            return "Id :" + this.Id;
+            return "Id :" + this.Id + "Email: " + this.Email + "Password: " + this.Password;
         }
     }
 }

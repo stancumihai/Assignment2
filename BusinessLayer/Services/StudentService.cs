@@ -1,40 +1,34 @@
-﻿using AutoMapper;
-using BusinessLayer.Contracts;
+﻿using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
-using DataAccess.UnitOfWorkLogic;
-using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
-using System.Text;
 
 namespace BusinessLayer.Services
 {
     public class StudentService : IStudentService
     {
         private readonly IGenericRepository GenericRepository;
-        private readonly IMapper Mapper;
 
-        public StudentService(IGenericRepository genericRepository, IMapper mapper)
+        public StudentService(IGenericRepository genericRepository)
         {
             GenericRepository = genericRepository;
-            Mapper = mapper;
         }
 
-        public void Add(StudentModel t)
+        public void Add(StudentModel studentModel)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var studentEntity = Mapper.Map<StudentEntity>(t);
+            using var uof = GenericRepository.CreateUnitOfWork();
+            var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == studentModel.User.Id).FirstOrDefault();
+            var studentEntity = new StudentEntity(studentModel.Id, null, studentModel.User.Id, studentModel.FullName, studentModel.Group, studentModel.Hobby);
             uof.Add<StudentEntity>(studentEntity);
             uof.SaveChanges();
         }
 
-        public void Delete(long Id)
+        public void Delete(int Id)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var studentEntity = uof.Get<StudentEntity>().Where(student => student.Id == Id).FirstOrDefault();
+            using var uof = GenericRepository.CreateUnitOfWork();
+            var studentEntity = GenericRepository.Get<StudentEntity>().Where(student => student.Id == Id).FirstOrDefault();
             if (studentEntity != null)
             {
                 uof.Delete<StudentEntity>(studentEntity);
@@ -44,28 +38,36 @@ namespace BusinessLayer.Services
 
         public List<StudentModel> GetAll()
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var studentEntities = uof.Get<StudentEntity>();
-            var studentModels = Mapper.Map<List<StudentModel>>(studentEntities);
-            uof.SaveChanges();
+            var studentEntities = GenericRepository.Get<StudentEntity>().ToList();
+            var studentModels = new List<StudentModel>();
+            foreach (var studentEntity in studentEntities)
+            {
+                UserEntity userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == studentEntity.UserId).FirstOrDefault();
+                UserModel userModel = new UserModel(userEntity.Id, userEntity.Email, userEntity.Password);
+                StudentModel studentModel = new StudentModel(studentEntity.Id, userModel, studentEntity.FullName, studentEntity.Group, studentEntity.Hobby);
+                studentModels.Add(studentModel);
+            }
             return studentModels;
         }
 
-        public StudentModel GetById(long Id)
+        public StudentModel GetById(int Id)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var studentEntity = uof.Get<StudentEntity>().Where(student => student.Id == Id).FirstOrDefault();
-            return Mapper.Map<StudentModel>(studentEntity);
+            var studentEntity = GenericRepository.Get<StudentEntity>().Where(student => student.Id == Id).FirstOrDefault();
+            var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == studentEntity.UserId).FirstOrDefault();
+            var userModel = new UserModel(userEntity.Id, userEntity.Email, userEntity.Password);
+            var studentModel = new StudentModel(studentEntity.Id, userModel, studentEntity.FullName, studentEntity.Group, studentEntity.Hobby);
+            return studentModel;
         }
 
-        public void Update(long Id, StudentModel t)
+        public void Update(int Id, StudentModel studentModel)
         {
-            IUnitOfWork uof = GenericRepository.CreateUnitOfWork();
-            var studentEntity = uof.Get<StudentEntity>().Where(student => student.Id == Id).FirstOrDefault();
+            using var uof = GenericRepository.CreateUnitOfWork();
+            var studentEntity = GenericRepository.Get<StudentEntity>().Where(student => student.Id == Id).FirstOrDefault();
             if (studentEntity != null)
             {
-                t.Id = Id;
-                uof.Update(t);
+                var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == studentModel.User.Id).FirstOrDefault();
+                var newStudentEntity = new StudentEntity(Id, userEntity, studentModel.FullName, studentModel.Group, studentModel.Hobby);
+                uof.Update<StudentEntity>(newStudentEntity);
                 uof.SaveChanges();
             }
         }

@@ -21,9 +21,9 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Contracts.Entities.AssignmentEntity", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("DeadLine")
@@ -32,11 +32,8 @@ namespace DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("LaboratoryId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("LaboratoryId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -45,11 +42,51 @@ namespace DataAccess.Migrations
                     b.ToTable("AssignmentEntities");
                 });
 
+            modelBuilder.Entity("DataAccess.Contracts.Entities.FinalResultEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("FinalResultEntities");
+                });
+
+            modelBuilder.Entity("DataAccess.Contracts.Entities.GradingEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<float>("Grade")
+                        .HasColumnType("real");
+
+                    b.Property<int?>("SubmissionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubmissionId");
+
+                    b.ToTable("GradingEntities");
+                });
+
             modelBuilder.Entity("DataAccess.Contracts.Entities.LaboratoryEntity", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("Date")
@@ -58,8 +95,8 @@ namespace DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("LaboratoryNumber")
-                        .HasColumnType("bigint");
+                    b.Property<int>("LaboratoryNumber")
+                        .HasColumnType("int");
 
                     b.Property<string>("Objectives")
                         .HasColumnType("nvarchar(max)");
@@ -72,48 +109,6 @@ namespace DataAccess.Migrations
                     b.ToTable("LaboratoryEntities");
                 });
 
-            modelBuilder.Entity("DataAccess.Contracts.Entities.ProfessorEntity", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("DOB")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long?>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProfessorEntities");
-                });
-
-            modelBuilder.Entity("DataAccess.Contracts.Entities.ProfessorLaboratories", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<long?>("LaboratoryId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("ProfessorId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LaboratoryId");
-
-                    b.HasIndex("ProfessorId");
-
-                    b.ToTable("ProfessorLaboratoriesEntities");
-                });
-
             modelBuilder.Entity("DataAccess.Contracts.Entities.RoleEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -121,45 +116,23 @@ namespace DataAccess.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Role")
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("RoleEntities");
-                });
-
-            modelBuilder.Entity("DataAccess.Contracts.Entities.StudentAssigments", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<long?>("AssignmentId")
-                        .HasColumnType("bigint");
-
-                    b.Property<decimal>("Grade")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<long?>("StudentId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssignmentId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("StudentAssigmentsEntities");
+                    b.ToTable("RolesEntities");
                 });
 
             modelBuilder.Entity("DataAccess.Contracts.Entities.StudentEntity", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Group")
                         .HasColumnType("nvarchar(max)");
@@ -167,8 +140,8 @@ namespace DataAccess.Migrations
                     b.Property<string>("Hobby")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long?>("UserId")
-                        .HasColumnType("bigint");
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -177,47 +150,95 @@ namespace DataAccess.Migrations
                     b.ToTable("StudentEntities");
                 });
 
-            modelBuilder.Entity("DataAccess.Contracts.Entities.StudentLaboratories", b =>
+            modelBuilder.Entity("DataAccess.Contracts.Entities.StudentLaboratoriesEntity", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<int?>("LaboratoryId")
+                        .HasColumnType("int");
 
-                    b.Property<long?>("LaboratoryId")
-                        .HasColumnType("bigint");
+                    b.Property<int?>("StudentId")
+                        .HasColumnType("int");
 
-                    b.Property<long?>("StudentId")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("LaboratoryId");
+                    b.HasKey("LaboratoryId", "StudentId");
 
                     b.HasIndex("StudentId");
 
                     b.ToTable("StudentLaboratoriesEntities");
                 });
 
+            modelBuilder.Entity("DataAccess.Contracts.Entities.SubmissionEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("AssignmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Github")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignmentId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("SubmissionEntities");
+                });
+
             modelBuilder.Entity("DataAccess.Contracts.Entities.UserEntity", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("FullName")
+                    b.Property<string>("Password")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Passsword")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("RoleEntityId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("RoleEntityId");
+
                     b.ToTable("UserEntities");
+                });
+
+            modelBuilder.Entity("DataAccess.Contracts.Entities.UserRolesEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserRolesEntities");
                 });
 
             modelBuilder.Entity("DataAccess.Contracts.Entities.AssignmentEntity", b =>
@@ -229,7 +250,27 @@ namespace DataAccess.Migrations
                     b.Navigation("Laboratory");
                 });
 
-            modelBuilder.Entity("DataAccess.Contracts.Entities.ProfessorEntity", b =>
+            modelBuilder.Entity("DataAccess.Contracts.Entities.FinalResultEntity", b =>
+                {
+                    b.HasOne("DataAccess.Contracts.Entities.StudentEntity", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("DataAccess.Contracts.Entities.GradingEntity", b =>
+                {
+                    b.HasOne("DataAccess.Contracts.Entities.SubmissionEntity", "Submission")
+                        .WithMany()
+                        .HasForeignKey("SubmissionId");
+
+                    b.Navigation("Submission");
+                });
+
+            modelBuilder.Entity("DataAccess.Contracts.Entities.StudentEntity", b =>
                 {
                     b.HasOne("DataAccess.Contracts.Entities.UserEntity", "User")
                         .WithMany()
@@ -238,29 +279,33 @@ namespace DataAccess.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DataAccess.Contracts.Entities.ProfessorLaboratories", b =>
+            modelBuilder.Entity("DataAccess.Contracts.Entities.StudentLaboratoriesEntity", b =>
                 {
                     b.HasOne("DataAccess.Contracts.Entities.LaboratoryEntity", "Laboratory")
-                        .WithMany("ProfessorLaboratories")
-                        .HasForeignKey("LaboratoryId");
+                        .WithMany("StudentLaboratories")
+                        .HasForeignKey("LaboratoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("DataAccess.Contracts.Entities.ProfessorEntity", "Professor")
-                        .WithMany()
-                        .HasForeignKey("ProfessorId");
+                    b.HasOne("DataAccess.Contracts.Entities.StudentEntity", "Student")
+                        .WithMany("StudentLaboratories")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Laboratory");
 
-                    b.Navigation("Professor");
+                    b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("DataAccess.Contracts.Entities.StudentAssigments", b =>
+            modelBuilder.Entity("DataAccess.Contracts.Entities.SubmissionEntity", b =>
                 {
                     b.HasOne("DataAccess.Contracts.Entities.AssignmentEntity", "Assignment")
-                        .WithMany("StudentAssigments")
+                        .WithMany()
                         .HasForeignKey("AssignmentId");
 
                     b.HasOne("DataAccess.Contracts.Entities.StudentEntity", "Student")
-                        .WithMany("StudentAssigments")
+                        .WithMany()
                         .HasForeignKey("StudentId");
 
                     b.Navigation("Assignment");
@@ -268,46 +313,40 @@ namespace DataAccess.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("DataAccess.Contracts.Entities.StudentEntity", b =>
+            modelBuilder.Entity("DataAccess.Contracts.Entities.UserEntity", b =>
                 {
+                    b.HasOne("DataAccess.Contracts.Entities.RoleEntity", null)
+                        .WithMany("Users")
+                        .HasForeignKey("RoleEntityId");
+                });
+
+            modelBuilder.Entity("DataAccess.Contracts.Entities.UserRolesEntity", b =>
+                {
+                    b.HasOne("DataAccess.Contracts.Entities.RoleEntity", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId");
+
                     b.HasOne("DataAccess.Contracts.Entities.UserEntity", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
 
+                    b.Navigation("Role");
+
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("DataAccess.Contracts.Entities.StudentLaboratories", b =>
-                {
-                    b.HasOne("DataAccess.Contracts.Entities.LaboratoryEntity", "Laboratory")
-                        .WithMany("StudentLaboratories")
-                        .HasForeignKey("LaboratoryId");
-
-                    b.HasOne("DataAccess.Contracts.Entities.StudentEntity", "Student")
-                        .WithMany("StudentLaboratories")
-                        .HasForeignKey("StudentId");
-
-                    b.Navigation("Laboratory");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("DataAccess.Contracts.Entities.AssignmentEntity", b =>
-                {
-                    b.Navigation("StudentAssigments");
                 });
 
             modelBuilder.Entity("DataAccess.Contracts.Entities.LaboratoryEntity", b =>
                 {
-                    b.Navigation("ProfessorLaboratories");
-
                     b.Navigation("StudentLaboratories");
+                });
+
+            modelBuilder.Entity("DataAccess.Contracts.Entities.RoleEntity", b =>
+                {
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("DataAccess.Contracts.Entities.StudentEntity", b =>
                 {
-                    b.Navigation("StudentAssigments");
-
                     b.Navigation("StudentLaboratories");
                 });
 #pragma warning restore 612, 618
