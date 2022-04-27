@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Contracts;
+﻿using AutoMapper;
+using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
@@ -10,15 +11,17 @@ namespace BusinessLayer.Services
     public class UserService : IUserService
     {
         private readonly IGenericRepository GenericRepository;
-        public UserService(IGenericRepository GenericRepository)
+        private IMapper Mapper;
+        public UserService(IGenericRepository GenericRepository, IMapper Mapper)
         {
             this.GenericRepository = GenericRepository;
+            this.Mapper = Mapper;
         }
 
         public void Add(UserModel userModel)
         {
             using var uof = GenericRepository.CreateUnitOfWork();
-            var userEntity = new UserEntity(userModel.Id, userModel.Email, userModel.Password);
+            var userEntity = Mapper.Map<UserEntity>(userModel);
             uof.Add<UserEntity>(userEntity);
             uof.SaveChanges();
         }
@@ -40,7 +43,7 @@ namespace BusinessLayer.Services
             var userModels = new List<UserModel>();
             foreach (var userEntity in userEntities)
             {
-                var userModel = new UserModel(userEntity.Id, userEntity.Email, userEntity.Password);
+                var userModel = Mapper.Map<UserModel>(userEntity);
                 userModels.Add(userModel);
             }
             return userModels;
@@ -49,7 +52,7 @@ namespace BusinessLayer.Services
         public UserModel GetById(int Id)
         {
             var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
-            var userModel = new UserModel(userEntity.Id, userEntity.Email, userEntity.Password);
+            var userModel = Mapper.Map<UserModel>(userEntity);
             return userModel;
         }
 
@@ -59,10 +62,8 @@ namespace BusinessLayer.Services
             var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == Id).FirstOrDefault();
             if (userEntity != null)
             {
-                var newUserEntity = new UserEntity(userModel.Id, userModel.Email, userModel.Password)
-                {
-                    Id = Id
-                };
+                var newUserEntity = Mapper.Map<UserEntity>(userModel);
+                newUserEntity.Id = Id;
                 uof.Update<UserEntity>(newUserEntity);
                 uof.SaveChanges();
             }

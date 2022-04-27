@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Contracts;
+﻿using AutoMapper;
+using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
@@ -11,9 +12,10 @@ namespace BusinessLayer.Services
     public class AssignmentService : IAssignmentService
     {
         private readonly IGenericRepository GenericRepository;
-
-        public AssignmentService(IGenericRepository genericRepository)
+        private IMapper Mapper;
+        public AssignmentService(IGenericRepository genericRepository, IMapper Mapper)
         {
+            this.Mapper = Mapper;
             GenericRepository = genericRepository;
         }
 
@@ -21,7 +23,9 @@ namespace BusinessLayer.Services
         {
             using var uof = GenericRepository.CreateUnitOfWork();
             var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(laboratory => laboratory.Id == assignmentModel.Laboratory.Id).FirstOrDefault();
-            var assignmentEntity = new AssignmentEntity(assignmentModel.Id, null, assignmentModel.Laboratory.Id, assignmentModel.DeadLine, assignmentModel.Description);
+            var assignmentEntity = Mapper.Map<AssignmentEntity>(assignmentModel);
+            assignmentEntity.Laboratory = null;
+            assignmentEntity.LaboratoryId = assignmentModel.Laboratory.Id;
             uof.Add<AssignmentEntity>(assignmentEntity);
             uof.SaveChanges();
         }
@@ -44,10 +48,10 @@ namespace BusinessLayer.Services
             foreach (var assignmentEntity in assignmentEntities)
             {
                 LaboratoryEntity laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(laboratory => laboratory.Id == assignmentEntity.LaboratoryId).FirstOrDefault();
-                LaboratoryModel laboratoryModel = new LaboratoryModel(laboratoryEntity.Id, laboratoryEntity.LaboratoryNumber, laboratoryEntity.Date, laboratoryEntity.Title, laboratoryEntity.Objectives, laboratoryEntity.Description);
-                AssignmentModel assignmentModel = new AssignmentModel(assignmentEntity.Id, laboratoryModel, assignmentEntity.DeadLine, assignmentEntity.Description);
+                LaboratoryModel laboratoryModel = Mapper.Map<LaboratoryModel>(laboratoryEntity);
+                AssignmentModel assignmentModel = Mapper.Map<AssignmentModel>(assignmentEntity);
+                assignmentModel.Laboratory = laboratoryModel;
                 assignmentModels.Add(assignmentModel);
-
             }
             return assignmentModels;
         }
@@ -56,9 +60,9 @@ namespace BusinessLayer.Services
         {
             var assignmentEntity = GenericRepository.Get<AssignmentEntity>().Where(assign => assign.Id == Id).FirstOrDefault();
             var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(laboratory => laboratory.Id == assignmentEntity.LaboratoryId).FirstOrDefault();
-            var laboratoryModel = new LaboratoryModel(laboratoryEntity.Id, laboratoryEntity.LaboratoryNumber, laboratoryEntity.Date, laboratoryEntity.Title, laboratoryEntity.Objectives, laboratoryEntity.Description);
-            var assignmentModel = new AssignmentModel(assignmentEntity.Id, laboratoryModel, assignmentEntity.DeadLine, assignmentEntity.Description);
-
+            var laboratoryModel = Mapper.Map<LaboratoryModel>(laboratoryEntity);
+            AssignmentModel assignmentModel = Mapper.Map<AssignmentModel>(assignmentEntity);
+            assignmentModel.Laboratory = laboratoryModel;
             return assignmentModel;
         }
 
@@ -69,7 +73,9 @@ namespace BusinessLayer.Services
             if (assignmentEntity != null)
             {
                 var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(laboratory => laboratory.Id == assignmentModel.Laboratory.Id).FirstOrDefault();
-                var newAssignmentEntity = new AssignmentEntity(Id, laboratoryEntity, assignmentModel.DeadLine, assignmentModel.Description);
+                var newAssignmentEntity = Mapper.Map<AssignmentEntity>(assignmentModel);
+                newAssignmentEntity.Id = Id;
+                newAssignmentEntity.Laboratory = laboratoryEntity;
                 uof.Update<AssignmentEntity>(newAssignmentEntity);
                 uof.SaveChanges();
             }

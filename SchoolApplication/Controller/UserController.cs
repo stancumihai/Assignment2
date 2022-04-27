@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Contracts;
+﻿using AutoMapper;
+using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,10 +15,12 @@ namespace SchoolApplication.Controller
     {
         private readonly IUserService UserService;
         private readonly ILogger Logger;
-        public UserController(IUserService UserService, ILoggerFactory Logger)
+        private IMapper Mapper;
+        public UserController(IUserService UserService, ILoggerFactory Logger, IMapper Mapper)
         {
             this.Logger = Logger.CreateLogger("UserControllerLoger");
             this.UserService = UserService;
+            this.Mapper = Mapper;
         }
 
         [HttpGet]
@@ -27,7 +30,7 @@ namespace SchoolApplication.Controller
             var userModelsList = UserService.GetAll();
             foreach (var userModel in userModelsList)
             {
-                UserDto userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
+                UserDto userDto = Mapper.Map<UserDto>(userModel);
                 userDtosList.Add(userDto);
             }
             return userDtosList;
@@ -36,7 +39,7 @@ namespace SchoolApplication.Controller
         [HttpPost]
         public IActionResult Post([FromBody] UserDto userDto)
         {
-            UserModel userModel = new UserModel(userDto.Id, userDto.Email, userDto.Password);
+            UserModel userModel = Mapper.Map<UserModel>(userDto);
             UserService.Add(userModel);
             return Ok(userModel);
         }
@@ -49,7 +52,7 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            UserDto userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
+            UserDto userDto = Mapper.Map<UserDto>(userModel);
             return Ok(userDto);
         }
 
@@ -73,7 +76,7 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            UserModel userModelUpdated = new UserModel(userDto.Id, userDto.Email, userDto.Password);
+            UserModel userModelUpdated = Mapper.Map<UserModel>(userDto);
             UserService.Update(Id, userModelUpdated);
             return Ok();
         }

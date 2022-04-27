@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Contracts;
+﻿using AutoMapper;
+using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,16 +15,19 @@ namespace SchoolApplication.Controller
         private readonly ISubmissionService SubmissionService;
         private readonly IAssignmentService AssignmentService;
         private readonly IStudentService StudentService;
+        private readonly IMapper Mapper;
         private ILogger Logger;
 
         public SubmissionController(ISubmissionService SubmissionService,
             ILoggerFactory Logger,
             IAssignmentService AssignmentService,
-            IStudentService StudentService)
+            IStudentService StudentService,
+            IMapper Mapper)
         {
             this.SubmissionService = SubmissionService;
             this.AssignmentService = AssignmentService;
             this.StudentService = StudentService;
+            this.Mapper = Mapper;
             this.Logger = Logger.CreateLogger("SubmissionControllerLogger");
         }
 
@@ -70,9 +74,13 @@ namespace SchoolApplication.Controller
             var userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
 
             var laboratoryModel = submissionModel.Assignment.Laboratory;
-            var laboratoryDto = new LaboratoryDto(laboratoryModel.Id, laboratoryModel.LaboratoryNumber, laboratoryModel.Date, laboratoryModel.Title, laboratoryModel.Objectives, laboratoryModel.Description); ;
-            var assignmentDto = new AssignmentDto(submissionModel.Assignment.Id, laboratoryDto, submissionModel.Assignment.DeadLine, submissionModel.Assignment.Description);
-            var studentDto = new StudentDto(submissionModel.Student.Id, userDto, submissionModel.Student.FullName, submissionModel.Student.Group, submissionModel.Student.Hobby);
+            var laboratoryDto = Mapper.Map<LaboratoryDto>(laboratoryModel);
+            var assignmentModel = submissionModel.Assignment;
+            var assignmentDto = Mapper.Map<AssignmentDto>(assignmentModel);
+            assignmentDto.Laboratory = laboratoryDto;
+            var studentModel = submissionModel.Student;
+            var studentDto = Mapper.Map<StudentDto>(studentModel);
+            studentDto.User = userDto;
             var submissionDto = new SubmissionDto(submissionModel.Id, assignmentDto, studentDto, submissionModel.Github, submissionModel.Comment);
 
             return Ok(submissionDto);

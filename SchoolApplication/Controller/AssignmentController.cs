@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Contracts;
+﻿using AutoMapper;
+using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using Microsoft.AspNetCore.Mvc;
 using SchoolApplication.Entities;
@@ -12,11 +13,12 @@ namespace SchoolApplication.Controller
     {
         private readonly IAssignmentService AssignmentService;
         private readonly ILaboratoryService LaboratoryService;
-
-        public AssignmentController(IAssignmentService AssignmentService, ILaboratoryService LaboratoryService)
+        private readonly IMapper Mapper;
+        public AssignmentController(IAssignmentService AssignmentService, ILaboratoryService LaboratoryService, IMapper Mapper)
         {
             this.AssignmentService = AssignmentService;
             this.LaboratoryService = LaboratoryService;
+            this.Mapper = Mapper;
         }
 
         [HttpGet]
@@ -26,8 +28,9 @@ namespace SchoolApplication.Controller
             var assignmentDtos = new List<AssignmentDto>();
             foreach (var assignmentModel in assignmentModels)
             {
-                var laboratoryDto = new LaboratoryDto(assignmentModel.Laboratory.Id, assignmentModel.Laboratory.LaboratoryNumber, assignmentModel.Laboratory.Date, assignmentModel.Laboratory.Title, assignmentModel.Laboratory.Objectives, assignmentModel.Laboratory.Description);
-                var assignmentDto = new AssignmentDto(assignmentModel.Id, laboratoryDto, assignmentModel.DeadLine, assignmentModel.Description);
+                var laboratoryDto = Mapper.Map<LaboratoryDto>(assignmentModel.Laboratory);
+                var assignmentDto = Mapper.Map<AssignmentDto>(assignmentModel);
+                assignmentDto.Laboratory = laboratoryDto;
                 assignmentDtos.Add(assignmentDto);
             }
 
@@ -42,7 +45,9 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            var assignmentModel = new AssignmentModel(assignmentDto.Id, laboratoryModel, assignmentDto.DeadLine, assignmentDto.Description);
+
+            var assignmentModel = Mapper.Map<AssignmentModel>(assignmentDto);
+            assignmentModel.Laboratory = laboratoryModel;
             AssignmentService.Add(assignmentModel);
             return Ok(assignmentModel);
         }
@@ -55,8 +60,9 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            var laboratoryDto = new LaboratoryDto(assignmentModel.Laboratory.Id, assignmentModel.Laboratory.LaboratoryNumber, assignmentModel.Laboratory.Date, assignmentModel.Laboratory.Title, assignmentModel.Laboratory.Objectives, assignmentModel.Laboratory.Description);
-            var assignmentDto = new AssignmentDto(assignmentModel.Id, laboratoryDto, assignmentModel.DeadLine, assignmentModel.Description);
+            var laboratoryDto = Mapper.Map<LaboratoryDto>(assignmentModel.Laboratory);
+            var assignmentDto = Mapper.Map<AssignmentDto>(assignmentModel);
+            assignmentDto.Laboratory = laboratoryDto;
             return Ok(assignmentDto);
         }
 
@@ -80,7 +86,9 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            var assignmentModelUpdated = new AssignmentModel(assignmentDto.Id, assignmentModel.Laboratory, assignmentDto.DeadLine, assignmentDto.Description);
+
+            var assignmentModelUpdated = Mapper.Map<AssignmentModel>(assignmentDto);
+            assignmentModelUpdated.Laboratory = assignmentModel.Laboratory;
             AssignmentService.Update(Id, assignmentModelUpdated);
             return Ok();
         }

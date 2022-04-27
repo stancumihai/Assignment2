@@ -52,7 +52,7 @@ namespace DataAccess.Migrations
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StudentId")
+                    b.Property<int?>("StudentId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -152,16 +152,20 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("DataAccess.Contracts.Entities.StudentLaboratoriesEntity", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
                     b.Property<int?>("LaboratoryId")
                         .HasColumnType("int");
 
                     b.Property<int?>("StudentId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
+                    b.HasKey("Id");
 
-                    b.HasKey("LaboratoryId", "StudentId");
+                    b.HasIndex("LaboratoryId");
 
                     b.HasIndex("StudentId");
 
@@ -209,12 +213,7 @@ namespace DataAccess.Migrations
                     b.Property<string>("Password")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("RoleEntityId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleEntityId");
 
                     b.ToTable("UserEntities");
                 });
@@ -241,10 +240,25 @@ namespace DataAccess.Migrations
                     b.ToTable("UserRolesEntities");
                 });
 
+            modelBuilder.Entity("RoleEntityUserEntity", b =>
+                {
+                    b.Property<int>("RolesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsersId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RolesId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("RoleEntityUserEntity");
+                });
+
             modelBuilder.Entity("DataAccess.Contracts.Entities.AssignmentEntity", b =>
                 {
                     b.HasOne("DataAccess.Contracts.Entities.LaboratoryEntity", "Laboratory")
-                        .WithMany()
+                        .WithMany("Assignments")
                         .HasForeignKey("LaboratoryId");
 
                     b.Navigation("Laboratory");
@@ -254,9 +268,7 @@ namespace DataAccess.Migrations
                 {
                     b.HasOne("DataAccess.Contracts.Entities.StudentEntity", "Student")
                         .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("StudentId");
 
                     b.Navigation("Student");
                 });
@@ -283,15 +295,11 @@ namespace DataAccess.Migrations
                 {
                     b.HasOne("DataAccess.Contracts.Entities.LaboratoryEntity", "Laboratory")
                         .WithMany("StudentLaboratories")
-                        .HasForeignKey("LaboratoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LaboratoryId");
 
                     b.HasOne("DataAccess.Contracts.Entities.StudentEntity", "Student")
                         .WithMany("StudentLaboratories")
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("StudentId");
 
                     b.Navigation("Laboratory");
 
@@ -313,13 +321,6 @@ namespace DataAccess.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("DataAccess.Contracts.Entities.UserEntity", b =>
-                {
-                    b.HasOne("DataAccess.Contracts.Entities.RoleEntity", null)
-                        .WithMany("Users")
-                        .HasForeignKey("RoleEntityId");
-                });
-
             modelBuilder.Entity("DataAccess.Contracts.Entities.UserRolesEntity", b =>
                 {
                     b.HasOne("DataAccess.Contracts.Entities.RoleEntity", "Role")
@@ -335,14 +336,26 @@ namespace DataAccess.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DataAccess.Contracts.Entities.LaboratoryEntity", b =>
+            modelBuilder.Entity("RoleEntityUserEntity", b =>
                 {
-                    b.Navigation("StudentLaboratories");
+                    b.HasOne("DataAccess.Contracts.Entities.RoleEntity", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Contracts.Entities.UserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("DataAccess.Contracts.Entities.RoleEntity", b =>
+            modelBuilder.Entity("DataAccess.Contracts.Entities.LaboratoryEntity", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("Assignments");
+
+                    b.Navigation("StudentLaboratories");
                 });
 
             modelBuilder.Entity("DataAccess.Contracts.Entities.StudentEntity", b =>

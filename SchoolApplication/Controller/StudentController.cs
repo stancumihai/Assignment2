@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Contracts;
+﻿using AutoMapper;
+using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using Microsoft.AspNetCore.Mvc;
 using SchoolApplication.Entities;
@@ -12,10 +13,12 @@ namespace SchoolApplication.Controller
     {
         private readonly IStudentService StudentService;
         private readonly IUserService UserService;
-        public StudentController(IStudentService StudentService, IUserService UserService)
+        private readonly IMapper Mapper;
+        public StudentController(IStudentService StudentService, IUserService UserService, IMapper Mapper)
         {
             this.StudentService = StudentService;
             this.UserService = UserService;
+            this.Mapper = Mapper;
         }
 
         [HttpGet]
@@ -25,8 +28,10 @@ namespace SchoolApplication.Controller
             var studentDtos = new List<StudentDto>();
             foreach (StudentModel studentModel in studentModels)
             {
-                var userDto = new UserDto(studentModel.User.Id, studentModel.User.Email, studentModel.User.Password);
-                var studentDto = new StudentDto(studentModel.Id, userDto, studentModel.FullName, studentModel.Group, studentModel.Hobby);
+
+                var userDto = Mapper.Map<UserDto>(studentModel.User);
+                var studentDto = Mapper.Map<StudentDto>(studentModel);
+                studentDto.User = userDto;
                 studentDtos.Add(studentDto);
             }
             return studentDtos;
@@ -36,7 +41,8 @@ namespace SchoolApplication.Controller
         public IActionResult Post(StudentCreateDto studentDto)
         {
             var userModel = UserService.GetById(studentDto.UserId);
-            var studentModel = new StudentModel(studentDto.Id, userModel, studentDto.FullName, studentDto.Group, studentDto.Hobby);
+            var studentModel = Mapper.Map<StudentModel>(studentDto);
+            studentModel.User = userModel;
             StudentService.Add(studentModel);
             return Ok(studentModel);
         }
@@ -49,9 +55,10 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            var userModel = studentModel.User;
-            var userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
-            var studentDto = new StudentDto(studentModel.Id, userDto, studentModel.FullName, studentModel.Group, studentModel.Hobby);
+            Mapper.Map<UserDto>(studentModel.User);
+            var userDto = Mapper.Map<UserDto>(studentModel.User);
+            var studentDto = Mapper.Map<StudentDto>(studentModel);
+            studentDto.User = userDto;
             return Ok(studentDto);
         }
 
@@ -75,9 +82,35 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            var studentModelUpdated = new StudentModel(studentDto.Id, studentModel.User, studentDto.FullName, studentDto.Group, studentDto.Hobby);
+            var studentModelUpdated = Mapper.Map<StudentModel>(studentDto);
+            studentModelUpdated.User = studentModel.User;
             StudentService.Update(Id, studentModelUpdated);
             return Ok();
+        }
+
+        [HttpGet("Laboratories/{Id}")]
+        public List<LaboratoryDto> GetLaboratoriesByStudentId([FromRoute] int Id)
+        {
+            var studentLaboratoryModels = StudentService.GetLaboratoriesByStudentId(Id);
+            var studentLaboratoryDtos = Mapper.Map<List<LaboratoryDto>>(studentLaboratoryModels);
+            return studentLaboratoryDtos;
+        }
+
+        [HttpGet("Submissions/{Id}")]
+        public List<SubmissionDto> GetSubmissionsByStudentId([FromRoute] int Id)
+        {
+            var studentSubmissionModels = StudentService.GetSubmissionsByStudentId(Id);
+            var studentSubmissionDto = Mapper.Map<List<SubmissionDto>>(studentSubmissionModels);
+            return studentSubmissionDto;
+        }
+
+        [HttpGet("Assignments/{Id}")]
+        public List<AssignmentDto> GetAssignmentsByStudentId([FromRoute] int Id)
+        {
+            var studentAssignmentModels = StudentService.GetAssignmentsByStudentId(Id);
+            var studentAssignmentModelsDtos = Mapper.Map<List<AssignmentDto>>(studentAssignmentModels);
+            return studentAssignmentModelsDtos;
+
         }
     }
 }

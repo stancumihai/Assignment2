@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DataAccess.Contracts.Entities
 {
     public class StudentLaboratoriesEntity : IEntity
     {
+        [Key]
         public int Id { get; set; }
 
         [ForeignKey("LaboratoryId")]
@@ -19,23 +21,13 @@ namespace DataAccess.Contracts.Entities
 
         }
 
-        public StudentLaboratoriesEntity(int laboratoryId, int studentId)
-        {
-            LaboratoryId = laboratoryId;
-            StudentId = studentId;
-        }
-
-        public StudentLaboratoriesEntity(LaboratoryEntity laboratory, StudentEntity student)
-        {
-            Laboratory = laboratory;
-            Student = student;
-        }
-
-        public StudentLaboratoriesEntity(int id, LaboratoryEntity laboratory, StudentEntity student)
+        public StudentLaboratoriesEntity(int id, LaboratoryEntity laboratory, int? laboratoryId, StudentEntity student, int? studentId)
         {
             Id = id;
             Laboratory = laboratory;
+            LaboratoryId = laboratoryId;
             Student = student;
+            StudentId = studentId;
         }
 
         public override string ToString()

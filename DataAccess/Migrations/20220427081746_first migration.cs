@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DataAccess.Migrations
 {
-    public partial class firstMigration : Migration
+    public partial class firstmigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -38,6 +38,20 @@ namespace DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserEntities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserEntities", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AssignmentEntities",
                 columns: table => new
                 {
@@ -59,24 +73,27 @@ namespace DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserEntities",
+                name: "RoleEntityUserEntity",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RoleEntityId = table.Column<int>(type: "int", nullable: true)
+                    RolesId = table.Column<int>(type: "int", nullable: false),
+                    UsersId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserEntities", x => x.Id);
+                    table.PrimaryKey("PK_RoleEntityUserEntity", x => new { x.RolesId, x.UsersId });
                     table.ForeignKey(
-                        name: "FK_UserEntities_RolesEntities_RoleEntityId",
-                        column: x => x.RoleEntityId,
+                        name: "FK_RoleEntityUserEntity_RolesEntities_RolesId",
+                        column: x => x.RolesId,
                         principalTable: "RolesEntities",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RoleEntityUserEntity_UserEntities_UsersId",
+                        column: x => x.UsersId,
+                        principalTable: "UserEntities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -133,7 +150,7 @@ namespace DataAccess.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    StudentId = table.Column<int>(type: "int", nullable: false),
+                    StudentId = table.Column<int>(type: "int", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -144,32 +161,33 @@ namespace DataAccess.Migrations
                         column: x => x.StudentId,
                         principalTable: "StudentEntities",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
                 name: "StudentLaboratoriesEntities",
                 columns: table => new
                 {
-                    LaboratoryId = table.Column<int>(type: "int", nullable: false),
-                    StudentId = table.Column<int>(type: "int", nullable: false),
                     Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    LaboratoryId = table.Column<int>(type: "int", nullable: true),
+                    StudentId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StudentLaboratoriesEntities", x => new { x.LaboratoryId, x.StudentId });
+                    table.PrimaryKey("PK_StudentLaboratoriesEntities", x => x.Id);
                     table.ForeignKey(
                         name: "FK_StudentLaboratoriesEntities_LaboratoryEntities_LaboratoryId",
                         column: x => x.LaboratoryId,
                         principalTable: "LaboratoryEntities",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_StudentLaboratoriesEntities_StudentEntities_StudentId",
                         column: x => x.StudentId,
                         principalTable: "StudentEntities",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -236,9 +254,19 @@ namespace DataAccess.Migrations
                 column: "SubmissionId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RoleEntityUserEntity_UsersId",
+                table: "RoleEntityUserEntity",
+                column: "UsersId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StudentEntities_UserId",
                 table: "StudentEntities",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentLaboratoriesEntities_LaboratoryId",
+                table: "StudentLaboratoriesEntities",
+                column: "LaboratoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentLaboratoriesEntities_StudentId",
@@ -254,11 +282,6 @@ namespace DataAccess.Migrations
                 name: "IX_SubmissionEntities_StudentId",
                 table: "SubmissionEntities",
                 column: "StudentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserEntities_RoleEntityId",
-                table: "UserEntities",
-                column: "RoleEntityId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserRolesEntities_RoleId",
@@ -280,6 +303,9 @@ namespace DataAccess.Migrations
                 name: "GradingEntities");
 
             migrationBuilder.DropTable(
+                name: "RoleEntityUserEntity");
+
+            migrationBuilder.DropTable(
                 name: "StudentLaboratoriesEntities");
 
             migrationBuilder.DropTable(
@@ -287,6 +313,9 @@ namespace DataAccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "SubmissionEntities");
+
+            migrationBuilder.DropTable(
+                name: "RolesEntities");
 
             migrationBuilder.DropTable(
                 name: "AssignmentEntities");
@@ -299,9 +328,6 @@ namespace DataAccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserEntities");
-
-            migrationBuilder.DropTable(
-                name: "RolesEntities");
         }
     }
 }

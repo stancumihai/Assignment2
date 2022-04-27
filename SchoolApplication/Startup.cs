@@ -47,6 +47,7 @@ namespace SchoolApplication
             services.AddScoped<IGradingService, GradingService>();
             services.AddScoped<IFinalResultService, FinalResultService>();
             services.AddScoped<ISubmissionService, SubmissionService>();
+            services.AddScoped<IStudentLaboratoriesService, StudentLaboratoriesService>();
 
         }
 

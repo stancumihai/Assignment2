@@ -14,6 +14,8 @@ namespace DataAccess.Contracts.Entities
         public string Description { get; set; }
 
         public ICollection<StudentLaboratoriesEntity> StudentLaboratories { get; set; }
+        public ICollection<AssignmentEntity> Assignments { get; set; }
+
         public LaboratoryEntity()
         {
 

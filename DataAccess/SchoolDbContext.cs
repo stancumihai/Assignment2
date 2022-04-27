@@ -28,8 +28,6 @@ namespace DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<StudentLaboratoriesEntity>()
-                .HasKey(sl => new { sl.LaboratoryId, sl.StudentId });
 
             modelBuilder.Entity<StudentLaboratoriesEntity>()
                 .HasOne(sl => sl.Student)

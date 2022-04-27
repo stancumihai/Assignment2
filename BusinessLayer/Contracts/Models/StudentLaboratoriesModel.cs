@@ -4,29 +4,25 @@
     {
         public int Id { get; set; }
 
-        public StudentModel Student { get; set; }
+        public virtual StudentModel Student { get; set; }
 
-        public LaboratoryModel Laboratory { get; set; }
-
-        public decimal Grade { get; set; }
+        public virtual LaboratoryModel Laboratory { get; set; }
 
         public StudentLaboratoriesModel()
         {
 
         }
-        public StudentLaboratoriesModel(StudentModel student, LaboratoryModel laboratory, decimal grade)
+        public StudentLaboratoriesModel(StudentModel student, LaboratoryModel laboratory)
         {
             Student = student;
             Laboratory = laboratory;
-            Grade = grade;
         }
 
-        public StudentLaboratoriesModel(int id, StudentModel student, LaboratoryModel laboratory, decimal grade)
+        public StudentLaboratoriesModel(int id, StudentModel student, LaboratoryModel laboratory)
         {
             Id = id;
             Student = student;
             Laboratory = laboratory;
-            Grade = grade;
         }
 
         public override string ToString()

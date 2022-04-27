@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Contracts;
+﻿using AutoMapper;
+using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -13,10 +14,12 @@ namespace SchoolApplication.Controller
     {
         private readonly ILaboratoryService LaboratoryService;
         private readonly ILogger Logger;
+        private readonly IMapper Mapper;
 
-        public LaboratoryController(ILaboratoryService LaboratoryService, ILoggerFactory Logger)
+        public LaboratoryController(ILaboratoryService LaboratoryService, ILoggerFactory Logger, IMapper Mapper)
         {
             this.LaboratoryService = LaboratoryService;
+            this.Mapper = Mapper;
             this.Logger = Logger.CreateLogger("UserControllerLoger");
         }
 
@@ -27,7 +30,7 @@ namespace SchoolApplication.Controller
             var laboratoryDtos = new List<LaboratoryDto>();
             foreach (var laboratoryModel in laboratoryModels)
             {
-                var laboratoryDto = new LaboratoryDto(laboratoryModel.Id, laboratoryModel.LaboratoryNumber, laboratoryModel.Date, laboratoryModel.Title, laboratoryModel.Objectives, laboratoryModel.Description);
+                var laboratoryDto = Mapper.Map<LaboratoryDto>(laboratoryModel);
                 laboratoryDtos.Add(laboratoryDto);
             }
             return laboratoryDtos;
@@ -35,7 +38,7 @@ namespace SchoolApplication.Controller
         [HttpPost]
         public IActionResult Post(LaboratoryDto LaboratoryDto)
         {
-            var laboratoryModel = new LaboratoryModel(LaboratoryDto.Id, LaboratoryDto.LaboratoryNumber, LaboratoryDto.Date, LaboratoryDto.Title, LaboratoryDto.Objectives, LaboratoryDto.Description);
+            var laboratoryModel = Mapper.Map<LaboratoryModel>(LaboratoryDto);
             LaboratoryService.Add(laboratoryModel);
             return Ok(laboratoryModel);
         }
@@ -48,7 +51,7 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            var labDto = new LaboratoryModel(labModel.Id, labModel.LaboratoryNumber, labModel.Date, labModel.Title, labModel.Objectives, labModel.Description);
+            var labDto = Mapper.Map<LaboratoryModel>(labModel);
             return Ok(labDto);
         }
 
@@ -72,9 +75,16 @@ namespace SchoolApplication.Controller
             {
                 return NotFound();
             }
-            var laboratoryUpdated = new LaboratoryModel(Id, LabDto.LaboratoryNumber, LabDto.Date, LabDto.Title, LabDto.Objectives, LabDto.Description);
+            var laboratoryUpdated = Mapper.Map<LaboratoryModel>(labModel);
             LaboratoryService.Update(Id, laboratoryUpdated);
             return Ok();
+        }
+
+        [HttpGet("Assignments/{LaboratoryId}")]
+        public List<AssignmentDto> GetAssignmentsByLaboratoryId([FromRoute] int LaboratoryId)
+        {
+            var laboratoryAssignmentsModels = LaboratoryService.GetAssignmentsByLaboratoryId(LaboratoryId);
+            return Mapper.Map<List<AssignmentDto>>(laboratoryAssignmentsModels);
         }
     }
 }

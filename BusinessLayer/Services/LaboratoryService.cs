@@ -1,7 +1,9 @@
-﻿using BusinessLayer.Contracts;
+﻿using AutoMapper;
+using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,17 +12,18 @@ namespace BusinessLayer.Services
     public class LaboratoryService : ILaboratoryService
     {
         private readonly IGenericRepository GenericRepository;
-
-        public LaboratoryService(IGenericRepository GenericRepository)
+        private readonly IMapper Mapper;
+        public LaboratoryService(IGenericRepository GenericRepository, IMapper Mapper)
         {
             this.GenericRepository = GenericRepository;
+            this.Mapper = Mapper;
 
         }
 
         public void Add(LaboratoryModel laboratoryModel)
         {
             using var uof = GenericRepository.CreateUnitOfWork();
-            var labEntity = new LaboratoryEntity(laboratoryModel.Id, laboratoryModel.LaboratoryNumber, laboratoryModel.Date, laboratoryModel.Title, laboratoryModel.Objectives, laboratoryModel.Description);
+            var labEntity = Mapper.Map<LaboratoryEntity>(laboratoryModel);
             uof.Add<LaboratoryEntity>(labEntity);
             uof.SaveChanges();
         }
@@ -42,7 +45,7 @@ namespace BusinessLayer.Services
             var laboratoryModels = new List<LaboratoryModel>();
             foreach (var laboratoryEntity in labEntities)
             {
-                var laboratoryModel = new LaboratoryModel(laboratoryEntity.Id, laboratoryEntity.LaboratoryNumber, laboratoryEntity.Date, laboratoryEntity.Title, laboratoryEntity.Objectives, laboratoryEntity.Description);
+                var laboratoryModel = Mapper.Map<LaboratoryModel>(laboratoryEntity);
                 laboratoryModels.Add(laboratoryModel);
             }
             return laboratoryModels;
@@ -51,7 +54,7 @@ namespace BusinessLayer.Services
         public LaboratoryModel GetById(int Id)
         {
             var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(user => user.Id == Id).FirstOrDefault();
-            var laboratoryModel = new LaboratoryModel(laboratoryEntity.Id, laboratoryEntity.LaboratoryNumber, laboratoryEntity.Date, laboratoryEntity.Title, laboratoryEntity.Objectives, laboratoryEntity.Description);
+            var laboratoryModel = Mapper.Map<LaboratoryModel>(laboratoryEntity);
             return laboratoryModel;
         }
 
@@ -61,10 +64,32 @@ namespace BusinessLayer.Services
             var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(lab => lab.Id == Id).FirstOrDefault();
             if (laboratoryEntity != null)
             {
-                var newLabEntity = new LaboratoryEntity(laboratoryModel.Id, laboratoryModel.LaboratoryNumber, laboratoryModel.Date, laboratoryModel.Title, laboratoryModel.Objectives, laboratoryModel.Description);
+                var newLabEntity = Mapper.Map<LaboratoryEntity>(laboratoryModel);
+                newLabEntity.Id = Id;
                 uof.Update<LaboratoryEntity>(newLabEntity);
                 uof.SaveChanges();
             }
+        }
+
+
+        public List<AssignmentModel> GetAssignmentsByLaboratoryId(long Id)
+        {
+            var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(lab => lab.Id == Id).FirstOrDefault();
+            var assignmentEntities = GenericRepository.Get<AssignmentEntity>().ToList();
+            var laboratoryAssignmentsModels = new List<AssignmentModel>();
+            if (laboratoryEntity != null)
+            {
+                foreach (var assignmentEntity in assignmentEntities)
+                {
+                    if (assignmentEntity.LaboratoryId == laboratoryEntity.Id)
+                    {
+                        var laboratoryAssignmentModel = Mapper.Map<AssignmentModel>(assignmentEntity);
+                        laboratoryAssignmentModel.Laboratory = Mapper.Map<LaboratoryModel>(laboratoryEntity);
+                        laboratoryAssignmentsModels.Add(laboratoryAssignmentModel);
+                    }
+                }
+            }
+            return laboratoryAssignmentsModels;
         }
     }
 }
