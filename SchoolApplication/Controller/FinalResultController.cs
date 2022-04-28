@@ -1,8 +1,11 @@
-﻿using BusinessLayer.Contracts;
+﻿using AutoMapper;
+using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SchoolApplication.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace SchoolApplication.Controller
@@ -14,12 +17,14 @@ namespace SchoolApplication.Controller
         private readonly IFinalResultService FinalResultService;
         private readonly IStudentService StudentService;
         private readonly ILogger Logger;
+        private readonly IMapper Mapper;
 
-        public FinalResultController(IFinalResultService FinalResultService, ILoggerFactory Logger, IStudentService StudentService)
+        public FinalResultController(IFinalResultService FinalResultService, ILoggerFactory Logger, IStudentService StudentService, IMapper Mapper)
         {
             this.StudentService = StudentService;
             this.FinalResultService = FinalResultService;
             this.Logger = Logger.CreateLogger("FinalResultController)");
+            this.Mapper = Mapper;
         }
 
         [HttpGet]
@@ -51,64 +56,73 @@ namespace SchoolApplication.Controller
         [HttpGet("{Id}")]
         public IActionResult GetById([FromRoute] int Id)
         {
-            var finalResultModel = FinalResultService.GetById(Id);
-            if (finalResultModel == null)
+            try
             {
-                return NotFound();
+                var finalResultModel = FinalResultService.GetById(Id);
+                var userModel = finalResultModel.Student.User;
+                var userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
+                var studentDto = new StudentDto(
+                        finalResultModel.Student.Id,
+                        userDto,
+                        finalResultModel.Student.FullName,
+                        finalResultModel.Student.Group,
+                        finalResultModel.Student.Hobby
+                    );
+                FinalResultDto result = new FinalResultDto(finalResultModel.Id, studentDto, finalResultModel.Status);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Final Result with Id " + Id + " Found ", objectInfo = result });
             }
-            var userModel = finalResultModel.Student.User;
-            var userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
-            var studentDto = new StudentDto(
-                    finalResultModel.Student.Id,
-                    userDto,
-                    finalResultModel.Student.FullName,
-                    finalResultModel.Student.Group,
-                    finalResultModel.Student.Hobby
-                );
-            FinalResultDto result = new FinalResultDto(finalResultModel.Id, studentDto, finalResultModel.Status);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Final Result with Id " + Id + " does not exist" });
 
-            return Ok(result);
+            }
         }
+
         [HttpPost]
         public IActionResult Post([FromBody] FinalResultCreateDto finalResultDto)
         {
             var student = StudentService.GetById(finalResultDto.StudentId);
+
             if (student == null)
             {
-                return NotFound("student not found");
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Student with Id " + finalResultDto.StudentId + " does not exist" });
+
             }
-
-
-            var result = new FinalResultModel(finalResultDto.Id, student, finalResultDto.Status);
-
-            FinalResultService.Add(result);
-            return Ok(result);
+            var finalResultModel = StudentService.GetFinalResultByStudentId(finalResultDto.StudentId);
+            FinalResultService.Add(finalResultModel);
+            return StatusCode(StatusCodes.Status201Created, new { message = "Final Created", objectInfo = finalResultModel });
         }
 
         [HttpDelete("{Id}")]
         public IActionResult Delete([FromRoute] int Id)
         {
-            var finalResult = FinalResultService.GetById(Id);
-            if (finalResult == null)
+            try
             {
-                return NotFound("FinalResult not found");
+                var finalResult = FinalResultService.GetById(Id);
+                FinalResultService.Delete(Id);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Final Result with Id " + Id + " Found " });
             }
-            FinalResultService.Delete(Id);
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Final Result with Id " + Id + " does not exist" });
+            }
         }
 
         [HttpPut("{Id}")]
         public IActionResult Update([FromBody] FinalResultCreateDto finalResultDto, [FromRoute] int Id)
         {
-            var finalResultModel = FinalResultService.GetById(Id);
-            if (finalResultModel == null)
+            try
             {
-                return NotFound();
-            }
+                var finalResultModel = FinalResultService.GetById(Id);
+                var modelUpdated = new FinalResultModel(finalResultDto.Id, finalResultModel.Student, finalResultDto.Status);
+                FinalResultService.Update(Id, modelUpdated);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Final Result with Id " + Id + " Updated ", objectInfo = modelUpdated });
 
-            var modelUpdated = new FinalResultModel(finalResultDto.Id, finalResultModel.Student, finalResultDto.Status);
-            FinalResultService.Update(Id, modelUpdated);
-            return Ok(modelUpdated);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Final Result with Id " + Id + " does not exist" });
+            }
         }
     }
 }

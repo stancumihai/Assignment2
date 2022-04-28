@@ -12,7 +12,18 @@ namespace SchoolApplication.Profiles
             CreateMap<UserEntity, UserModel>().ReverseMap();
             CreateMap<UserModel, UserDto>().ReverseMap();
 
-            CreateMap<AssignmentEntity, AssignmentModel>().ReverseMap();
+            CreateMap<AssignmentEntity, AssignmentModel>();
+            CreateMap<AssignmentModel, AssignmentEntity>()
+                .ForMember(src => src.LaboratoryId, opt => opt.MapFrom(dst => 
+                new LaboratoryModel
+                {
+                    Id = dst.Laboratory.Id,
+                    Date = dst.Laboratory.Date,
+                    Title = dst.Laboratory.Title,
+                    Objectives = dst.Laboratory.Objectives,
+                    Description = dst.Laboratory.Description
+                }));
+
             CreateMap<AssignmentModel, AssignmentDto>().ReverseMap();
             CreateMap<AssignmentModel, AssignmentCreateDto>().ReverseMap();
 

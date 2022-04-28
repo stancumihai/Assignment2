@@ -34,7 +34,11 @@ namespace BusinessLayer.Services
         {
             using var uof = GenericRepository.CreateUnitOfWork();
             var assignmentEntity = GenericRepository.Get<AssignmentEntity>().Where(assign => assign.Id == Id).FirstOrDefault();
-            if (assignmentEntity != null)
+            if (assignmentEntity == null)
+            {
+                throw new Exception();
+            }
+            else
             {
                 uof.Delete<AssignmentEntity>(assignmentEntity);
                 uof.SaveChanges();
@@ -58,7 +62,10 @@ namespace BusinessLayer.Services
 
         public AssignmentModel GetById(int Id)
         {
+
             var assignmentEntity = GenericRepository.Get<AssignmentEntity>().Where(assign => assign.Id == Id).FirstOrDefault();
+            if (assignmentEntity == null) throw new Exception();
+           
             var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(laboratory => laboratory.Id == assignmentEntity.LaboratoryId).FirstOrDefault();
             var laboratoryModel = Mapper.Map<LaboratoryModel>(laboratoryEntity);
             AssignmentModel assignmentModel = Mapper.Map<AssignmentModel>(assignmentEntity);
@@ -79,6 +86,7 @@ namespace BusinessLayer.Services
                 uof.Update<AssignmentEntity>(newAssignmentEntity);
                 uof.SaveChanges();
             }
+            else throw new Exception();
         }
     }
 }

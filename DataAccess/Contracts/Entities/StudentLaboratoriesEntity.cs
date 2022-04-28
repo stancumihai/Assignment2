@@ -32,7 +32,7 @@ namespace DataAccess.Contracts.Entities
 
         public override string ToString()
         {
-            return "Id :" + this.Id + " " + "Laboratory:" + this.Laboratory + " " + "Student: " + this.Student;
+            return "Id :" + this.Id + " " + "Laboratory:" + this.LaboratoryId + " " + "Student: " + this.StudentId;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DataAccess.Contracts.Entities;
+using DataAccess.DataFeeder;
 using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess
@@ -38,6 +39,15 @@ namespace DataAccess
               .HasOne(sl => sl.Laboratory)
               .WithMany(s => s.StudentLaboratories)
               .HasForeignKey(sl => sl.LaboratoryId);
+
+
+            modelBuilder.Entity<LaboratoryEntity>().HasData(LaboratoryFeeder.FeedLaboratoryEntities());
+            modelBuilder.Entity<AssignmentEntity>().HasData(AssignmentFeeder.FeedAssignmentEntities());
+            modelBuilder.Entity<UserEntity>().HasData(UserFeeder.FeedUserEntites());
+            modelBuilder.Entity<StudentEntity>().HasData(StudentFeeder.FeedStudentEntities());
+            modelBuilder.Entity<StudentLaboratoriesEntity>().HasData(StudentLaboratoriesFeeder.FeedStudentLaboratoriesEntities());
+            modelBuilder.Entity<SubmissionEntity>().HasData(SubmissionFeeder.FeedSubmissionEntities());
+            modelBuilder.Entity<GradingEntity>().HasData(GradingFeeder.FeedGradingEntities());
         }
     }
 }

@@ -3,6 +3,7 @@ using BusinessLayer.Contracts.Models;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,10 +15,11 @@ namespace BusinessLayer.Services
 
         private readonly IGenericRepository GenericRepository;
         private readonly ILogger Logger;
-
-        public FinalResultService(IGenericRepository GenericRepository, ILoggerFactory Logger)
+        private IStudentService StudentService;
+        public FinalResultService(IGenericRepository GenericRepository, ILoggerFactory Logger, IStudentService StudentService)
         {
             this.GenericRepository = GenericRepository;
+            this.StudentService = StudentService;
             this.Logger = Logger.CreateLogger("UserServiceLogger");
         }
 
@@ -39,6 +41,7 @@ namespace BusinessLayer.Services
                 uof.Delete<FinalResultEntity>(finalResultEntity);
                 uof.SaveChanges();
             }
+            else throw new Exception();
         }
 
         public List<FinalResultModel> GetAll()
@@ -61,7 +64,9 @@ namespace BusinessLayer.Services
 
         public FinalResultModel GetById(int Id)
         {
+
             var finalResultEntity = GenericRepository.Get<FinalResultEntity>().Where(finalResult => finalResult.Id == Id).FirstOrDefault();
+            if (finalResultEntity == null) throw new Exception();
 
             var studentEntity = GenericRepository.Get<StudentEntity>().Where(student => student.Id == finalResultEntity.StudentId).FirstOrDefault();
             var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == studentEntity.UserId).FirstOrDefault();
@@ -86,6 +91,7 @@ namespace BusinessLayer.Services
                 uof.Update<FinalResultEntity>(newFinalResultEntity);
                 uof.SaveChanges();
             }
+            else throw new Exception();
         }
     }
 }

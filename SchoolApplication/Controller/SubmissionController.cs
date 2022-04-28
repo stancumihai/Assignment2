@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SchoolApplication.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace SchoolApplication.Controller
@@ -65,50 +67,61 @@ namespace SchoolApplication.Controller
         [HttpGet("{Id}")]
         public IActionResult GetById([FromRoute] int Id)
         {
-            SubmissionModel submissionModel = SubmissionService.GetById(Id);
-            if (submissionModel == null)
+            try
             {
-                return NotFound();
+                SubmissionModel submissionModel = SubmissionService.GetById(Id);
+                var userModel = submissionModel.Student.User;
+                var userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
+
+                var laboratoryModel = submissionModel.Assignment.Laboratory;
+                var laboratoryDto = Mapper.Map<LaboratoryDto>(laboratoryModel);
+                var assignmentModel = submissionModel.Assignment;
+                var assignmentDto = Mapper.Map<AssignmentDto>(assignmentModel);
+                assignmentDto.Laboratory = laboratoryDto;
+                var studentModel = submissionModel.Student;
+                var studentDto = Mapper.Map<StudentDto>(studentModel);
+                studentDto.User = userDto;
+                var submissionDto = new SubmissionDto(submissionModel.Id, assignmentDto, studentDto, submissionModel.Github, submissionModel.Comment);
+
+                return StatusCode(StatusCodes.Status200OK, new { message = "Submission found", objectInfo = submissionDto });
             }
-            var userModel = submissionModel.Student.User;
-            var userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Submission with Id " + Id + "  not found" });
 
-            var laboratoryModel = submissionModel.Assignment.Laboratory;
-            var laboratoryDto = Mapper.Map<LaboratoryDto>(laboratoryModel);
-            var assignmentModel = submissionModel.Assignment;
-            var assignmentDto = Mapper.Map<AssignmentDto>(assignmentModel);
-            assignmentDto.Laboratory = laboratoryDto;
-            var studentModel = submissionModel.Student;
-            var studentDto = Mapper.Map<StudentDto>(studentModel);
-            studentDto.User = userDto;
-            var submissionDto = new SubmissionDto(submissionModel.Id, assignmentDto, studentDto, submissionModel.Github, submissionModel.Comment);
-
-            return Ok(submissionDto);
+            }
         }
 
         [HttpDelete("{Id}")]
         public IActionResult Delete([FromRoute] int Id)
         {
-            SubmissionModel submissionModel = SubmissionService.GetById(Id);
-            if (submissionModel == null)
+            try
             {
-                return NotFound();
+                SubmissionModel submissionModel = SubmissionService.GetById(Id);
+                SubmissionService.Delete(Id);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Submission deleted", objectInfo = submissionModel });
             }
-            SubmissionService.Delete(Id);
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Submission with Id " + Id + "  not found" });
+
+            }
         }
 
         [HttpPut("{Id}")]
         public IActionResult Update([FromRoute] int Id, [FromBody] SubmissionCreateDto submissionDto)
         {
-            var submissionModel = SubmissionService.GetById(Id);
-            if (submissionModel == null)
+            try
             {
-                return NotFound();
+                var submissionModel = SubmissionService.GetById(Id);
+                var submissionModelUpdated = new SubmissionModel(submissionDto.Id, submissionModel.Assignment, submissionModel.Student, submissionDto.Github, submissionDto.Comment);
+                SubmissionService.Update(Id, submissionModelUpdated);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Submission updated", objectInfo = submissionModelUpdated });
             }
-            var submissionModelUpdated = new SubmissionModel(submissionDto.Id, submissionModel.Assignment, submissionModel.Student, submissionDto.Github, submissionDto.Comment);
-            SubmissionService.Update(Id, submissionModelUpdated);
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Submission with Id " + Id + "  not found" });
+            }
         }
     }
 }

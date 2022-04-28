@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SchoolApplication.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace SchoolApplication.Controller
@@ -43,54 +45,62 @@ namespace SchoolApplication.Controller
             var laboratoryModel = LaboratoryService.GetById(assignmentDto.LaboratoryId);
             if (laboratoryModel == null)
             {
-                return NotFound();
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Laboratory with Id " + assignmentDto.LaboratoryId + " does not exist" });
             }
 
             var assignmentModel = Mapper.Map<AssignmentModel>(assignmentDto);
             assignmentModel.Laboratory = laboratoryModel;
             AssignmentService.Add(assignmentModel);
-            return Ok(assignmentModel);
+            return StatusCode(StatusCodes.Status201Created, new { message = "Assignment created", objectInfo = assignmentModel });
         }
 
         [HttpGet("{Id}")]
-        public IActionResult GetById([FromRoute] int Id)
+        public ObjectResult GetById([FromRoute] int Id)
         {
-            var assignmentModel = AssignmentService.GetById(Id);
-            if (assignmentModel == null)
+            try
             {
-                return NotFound();
+                var assignmentModel = AssignmentService.GetById(Id);
+                var laboratoryDto = Mapper.Map<LaboratoryDto>(assignmentModel.Laboratory);
+                var assignmentDto = Mapper.Map<AssignmentDto>(assignmentModel);
+                assignmentDto.Laboratory = laboratoryDto;
+                return StatusCode(StatusCodes.Status200OK, new { message = "Assignment found", objectInfo = assignmentModel });
             }
-            var laboratoryDto = Mapper.Map<LaboratoryDto>(assignmentModel.Laboratory);
-            var assignmentDto = Mapper.Map<AssignmentDto>(assignmentModel);
-            assignmentDto.Laboratory = laboratoryDto;
-            return Ok(assignmentDto);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Assignment with Id " + Id + "  not found" });
+            }
         }
 
         [HttpDelete("{Id}")]
-        public IActionResult Delete([FromRoute] int Id)
+        public ObjectResult Delete([FromRoute] int Id)
         {
             var assignmentModel = AssignmentService.GetById(Id);
-            if (assignmentModel == null)
+            try
             {
-                return NotFound();
+                AssignmentService.Delete(Id);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Assignment Deleted", objectInfo = assignmentModel });
             }
-            AssignmentService.Delete(Id);
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Assignment with Id " + Id + " does not exist" });
+            }
         }
 
         [HttpPut("{Id}")]
-        public IActionResult Update([FromRoute] int Id, [FromBody] AssignmentCreateDto assignmentDto)
+        public ObjectResult Update([FromRoute] int Id, [FromBody] AssignmentCreateDto assignmentDto)
         {
             var assignmentModel = AssignmentService.GetById(Id);
-            if (assignmentModel == null)
+            try
             {
-                return NotFound();
+                var assignmentModelUpdated = Mapper.Map<AssignmentModel>(assignmentDto);
+                assignmentModelUpdated.Laboratory = assignmentModel.Laboratory;
+                AssignmentService.Update(Id, assignmentModelUpdated);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Assignment Updated", objectInfo = assignmentModel });
             }
-
-            var assignmentModelUpdated = Mapper.Map<AssignmentModel>(assignmentDto);
-            assignmentModelUpdated.Laboratory = assignmentModel.Laboratory;
-            AssignmentService.Update(Id, assignmentModelUpdated);
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Assignment with Id " + Id + " does not exist" });
+            }
         }
     }
 }

@@ -6,7 +6,6 @@ using DataAccess.Contracts.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace BusinessLayer.Services
 {
@@ -53,11 +52,12 @@ namespace BusinessLayer.Services
             var studentLaboratoryEntity = GenericRepository.Get<StudentLaboratoriesEntity>()
                .Where(studentLaboratory => studentLaboratory.Id == Id).FirstOrDefault();
 
-            if (studentLaboratoryEntity != null)
+            if (studentLaboratoryEntity == null)
             {
-                uof.Delete<StudentLaboratoriesEntity>(studentLaboratoryEntity);
-                uof.SaveChanges();
+                throw new Exception();
             }
+            uof.Delete<StudentLaboratoriesEntity>(studentLaboratoryEntity);
+            uof.SaveChanges();
         }
 
         public List<StudentLaboratoriesModel> GetAll()
@@ -87,6 +87,11 @@ namespace BusinessLayer.Services
         {
             var studentLaboratoryEntity = GenericRepository.Get<StudentLaboratoriesEntity>()
                   .Where(studentLaboratory => studentLaboratory.Id == Id).FirstOrDefault();
+
+            if (studentLaboratoryEntity == null)
+            {
+                throw new Exception();
+            }
 
             var studentEntity = GenericRepository.Get<StudentEntity>()
                    .Where(student => student.Id == studentLaboratoryEntity.StudentId).FirstOrDefault();

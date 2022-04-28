@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SchoolApplication.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace SchoolApplication.Controller
@@ -14,11 +16,13 @@ namespace SchoolApplication.Controller
         private readonly IStudentService StudentService;
         private readonly IUserService UserService;
         private readonly IMapper Mapper;
-        public StudentController(IStudentService StudentService, IUserService UserService, IMapper Mapper)
+        private readonly IFinalResultService FinalResultService;
+        public StudentController(IStudentService StudentService, IUserService UserService, IMapper Mapper, IFinalResultService FinalResultService)
         {
             this.StudentService = StudentService;
             this.UserService = UserService;
             this.Mapper = Mapper;
+            this.FinalResultService = FinalResultService;
         }
 
         [HttpGet]
@@ -28,7 +32,6 @@ namespace SchoolApplication.Controller
             var studentDtos = new List<StudentDto>();
             foreach (StudentModel studentModel in studentModels)
             {
-
                 var userDto = Mapper.Map<UserDto>(studentModel.User);
                 var studentDto = Mapper.Map<StudentDto>(studentModel);
                 studentDto.User = userDto;
@@ -41,51 +44,67 @@ namespace SchoolApplication.Controller
         public IActionResult Post(StudentCreateDto studentDto)
         {
             var userModel = UserService.GetById(studentDto.UserId);
+            if (userModel == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "User with Id " + studentDto.UserId + " not found" });
+            }
             var studentModel = Mapper.Map<StudentModel>(studentDto);
             studentModel.User = userModel;
             StudentService.Add(studentModel);
-            return Ok(studentModel);
+            return StatusCode(StatusCodes.Status201Created, new { message = "Student Created", objectInfo = studentModel });
         }
 
         [HttpGet("{Id}")]
         public IActionResult GetById([FromRoute] int Id)
         {
-            var studentModel = StudentService.GetById(Id);
-            if (studentModel == null)
+            try
             {
-                return NotFound();
+                var studentModel = StudentService.GetById(Id);
+                Mapper.Map<UserDto>(studentModel.User);
+                var userDto = Mapper.Map<UserDto>(studentModel.User);
+                var studentDto = Mapper.Map<StudentDto>(studentModel);
+                studentDto.User = userDto;
+                return StatusCode(StatusCodes.Status200OK, new { message = "Student Foound", objectInfo = studentDto });
             }
-            Mapper.Map<UserDto>(studentModel.User);
-            var userDto = Mapper.Map<UserDto>(studentModel.User);
-            var studentDto = Mapper.Map<StudentDto>(studentModel);
-            studentDto.User = userDto;
-            return Ok(studentDto);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Student with Id " + Id + " not found" });
+
+            }
         }
 
         [HttpDelete("{Id}")]
         public IActionResult Delete([FromRoute] int Id)
         {
-            var studentModel = StudentService.GetById(Id);
-            if (studentModel == null)
+            try
             {
-                return NotFound();
+                var studentModel = StudentService.GetById(Id);
+                StudentService.Delete(Id);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Student Deleted", objectInfo = studentModel });
             }
-            StudentService.Delete(Id);
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Student with Id " + Id + " not found" });
+
+            }
         }
 
         [HttpPut("{Id}")]
         public IActionResult Update([FromRoute] int Id, [FromBody] StudentCreateDto studentDto)
         {
-            var studentModel = StudentService.GetById(Id);
-            if (studentModel == null)
+            try
             {
-                return NotFound();
+                var studentModel = StudentService.GetById(Id);
+                var studentModelUpdated = Mapper.Map<StudentModel>(studentDto);
+                studentModelUpdated.User = studentModel.User;
+                StudentService.Update(Id, studentModelUpdated);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Student Updated", objectInfo = studentModelUpdated });
             }
-            var studentModelUpdated = Mapper.Map<StudentModel>(studentDto);
-            studentModelUpdated.User = studentModel.User;
-            StudentService.Update(Id, studentModelUpdated);
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Student with Id " + Id + " not found" });
+
+            }
         }
 
         [HttpGet("Laboratories/{Id}")]
@@ -111,6 +130,23 @@ namespace SchoolApplication.Controller
             var studentAssignmentModelsDtos = Mapper.Map<List<AssignmentDto>>(studentAssignmentModels);
             return studentAssignmentModelsDtos;
 
+        }
+
+        [HttpGet("Gradings/{Id}")]
+        public List<GradingDto> GetGradingsByStudentId([FromRoute] int Id)
+        {
+            var studentGradingModels = StudentService.GetGradingsByStudentId(Id);
+            var studentGradingDtos = Mapper.Map<List<GradingDto>>(studentGradingModels);
+            return studentGradingDtos;
+        }
+
+
+        [HttpGet("FinalResult/{Id}")]
+        public FinalResultDto GetFinalResultByStudentId([FromRoute] int Id)
+        {
+            var finalResultModel = StudentService.GetFinalResultByStudentId(Id);
+            var finalResultDto = Mapper.Map<FinalResultDto>(finalResultModel);
+            return finalResultDto;
         }
     }
 }

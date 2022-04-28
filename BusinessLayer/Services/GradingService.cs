@@ -2,6 +2,7 @@
 using BusinessLayer.Contracts.Models;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -34,6 +35,7 @@ namespace BusinessLayer.Services
                 uof.Delete<GradingEntity>(gradingEntity);
                 uof.SaveChanges();
             }
+            else throw new Exception();
         }
 
         public List<GradingModel> GetAll()
@@ -62,6 +64,7 @@ namespace BusinessLayer.Services
         public GradingModel GetById(int Id)
         {
             var gradingEntity = GenericRepository.Get<GradingEntity>().Where(grading => grading.Id == Id).FirstOrDefault();
+            if (gradingEntity == null) throw new Exception();
 
             var submissionEntity = GenericRepository.Get<SubmissionEntity>().Where(submission => submission.Id == gradingEntity.SubmissionId).FirstOrDefault();
             var assignmentEntity = GenericRepository.Get<AssignmentEntity>().Where(assignment => assignment.Id == submissionEntity.AssignmentId).FirstOrDefault();
@@ -92,6 +95,7 @@ namespace BusinessLayer.Services
                 uof.Update<GradingEntity>(newGradingEntity);
                 uof.SaveChanges();
             }
+            else throw new Exception();
         }
     }
 }

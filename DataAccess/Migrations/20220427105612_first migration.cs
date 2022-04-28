@@ -238,6 +238,102 @@ namespace DataAccess.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.InsertData(
+                table: "LaboratoryEntities",
+                columns: new[] { "Id", "Date", "Description", "LaboratoryNumber", "Objectives", "Title" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2022, 4, 29, 0, 0, 0, 0, DateTimeKind.Local), "Learning Architecture Laboratory 1", 1, "Learning Architecture", "Laboratory 1" },
+                    { 2, new DateTime(2022, 4, 29, 0, 0, 0, 0, DateTimeKind.Local), "Learning Architecture 2 Laboratory 2", 2, "Learning Architecture 2", "Laboratory 2" },
+                    { 3, new DateTime(2022, 4, 30, 0, 0, 0, 0, DateTimeKind.Local), "Learning Architecture 3 Laboratory 3", 3, "Learning Architecture 3", "Laboratory 3" },
+                    { 4, new DateTime(2022, 4, 30, 0, 0, 0, 0, DateTimeKind.Local), "Learning Architecture 4 Laboratory 4", 4, "Learning Architecture 4", "Laboratory 4" },
+                    { 5, new DateTime(2022, 4, 30, 0, 0, 0, 0, DateTimeKind.Local), "Learning Architecture 4 Laboratory 4", 4, "Learning Architecture 4", "Laboratory 4" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "UserEntities",
+                columns: new[] { "Id", "Email", "Password" },
+                values: new object[,]
+                {
+                    { 1, "1@yahoo.com", "1234" },
+                    { 2, "2@yahoo.com", "1234" },
+                    { 3, "3@yahoo.com", "1234" },
+                    { 4, "4@yahoo.com", "1234" },
+                    { 5, "5@yahoo.com", "1234" },
+                    { 6, "5@yahoo.com", "1234" },
+                    { 7, "6@yahoo.com", "1234" },
+                    { 8, "7@yahoo.com", "1234" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "AssignmentEntities",
+                columns: new[] { "Id", "DeadLine", "Description", "LaboratoryId" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(2469), "Assignment1", 1 },
+                    { 2, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(3067), "Assignment1", 1 },
+                    { 3, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(3100), "Assignment2", 2 },
+                    { 4, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(3105), "Assignment2", 2 },
+                    { 5, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(3109), "Assignment3", 3 },
+                    { 6, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(3117), "Assignment3", 3 },
+                    { 7, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(3122), "Assignment4", 4 },
+                    { 8, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(3127), "Assignment4", 4 },
+                    { 9, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(3131), "Assignment5", 5 },
+                    { 10, new DateTime(2022, 4, 27, 13, 56, 11, 553, DateTimeKind.Local).AddTicks(3137), "Assignment5", 5 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "StudentEntities",
+                columns: new[] { "Id", "FullName", "Group", "Hobby", "UserId" },
+                values: new object[,]
+                {
+                    { 1, "student1", "30231", "asd", 2 },
+                    { 2, "student2", "30231", "asd", 3 },
+                    { 3, "student3", "30231", "asd", 4 },
+                    { 4, "student4", "30231", "asd", 5 },
+                    { 5, "student5", "30231", "asd", 6 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "StudentLaboratoriesEntities",
+                columns: new[] { "Id", "LaboratoryId", "StudentId" },
+                values: new object[,]
+                {
+                    { 1, 1, 2 },
+                    { 2, 2, 2 },
+                    { 3, 3, 2 },
+                    { 4, 1, 3 },
+                    { 5, 2, 3 },
+                    { 6, 3, 3 },
+                    { 7, 4, 3 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "SubmissionEntities",
+                columns: new[] { "Id", "AssignmentId", "Comment", "Github", "StudentId" },
+                values: new object[,]
+                {
+                    { 1, 1, "asd", "asd", 2 },
+                    { 2, 2, "asd", "asd", 2 },
+                    { 3, 3, "asd", "asd", 2 },
+                    { 4, 1, "asd", "asd", 3 },
+                    { 5, 2, "asd", "asd", 3 },
+                    { 6, 3, "asd", "asd", 3 }
+                });
+
+            migrationBuilder.InsertData(
+                table: "GradingEntities",
+                columns: new[] { "Id", "Grade", "SubmissionId" },
+                values: new object[,]
+                {
+                    { 1, 6f, 1 },
+                    { 2, 6f, 2 },
+                    { 3, 6f, 3 },
+                    { 4, 5f, 4 },
+                    { 5, 5f, 5 },
+                    { 6, 5f, 6 }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AssignmentEntities_LaboratoryId",
                 table: "AssignmentEntities",

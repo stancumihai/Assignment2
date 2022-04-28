@@ -37,6 +37,7 @@ namespace BusinessLayer.Services
                 uof.Delete<LaboratoryEntity>(labEntity);
                 uof.SaveChanges();
             }
+            else throw new Exception();
         }
 
         public List<LaboratoryModel> GetAll()
@@ -54,6 +55,8 @@ namespace BusinessLayer.Services
         public LaboratoryModel GetById(int Id)
         {
             var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(user => user.Id == Id).FirstOrDefault();
+            if (laboratoryEntity == null) throw new Exception();
+
             var laboratoryModel = Mapper.Map<LaboratoryModel>(laboratoryEntity);
             return laboratoryModel;
         }
@@ -69,27 +72,24 @@ namespace BusinessLayer.Services
                 uof.Update<LaboratoryEntity>(newLabEntity);
                 uof.SaveChanges();
             }
+            else throw new Exception();
         }
 
 
         public List<AssignmentModel> GetAssignmentsByLaboratoryId(long Id)
         {
             var laboratoryEntity = GenericRepository.Get<LaboratoryEntity>().Where(lab => lab.Id == Id).FirstOrDefault();
-            var assignmentEntities = GenericRepository.Get<AssignmentEntity>().ToList();
-            var laboratoryAssignmentsModels = new List<AssignmentModel>();
             if (laboratoryEntity != null)
             {
-                foreach (var assignmentEntity in assignmentEntities)
+                List<AssignmentEntity> assignmentEntities = GenericRepository.Get<AssignmentEntity>().Where(assign => assign.LaboratoryId == Id).ToList();
+                List<AssignmentModel> assignmentModels = Mapper.Map<List<AssignmentModel>>(assignmentEntities);
+                foreach (var model in assignmentModels)
                 {
-                    if (assignmentEntity.LaboratoryId == laboratoryEntity.Id)
-                    {
-                        var laboratoryAssignmentModel = Mapper.Map<AssignmentModel>(assignmentEntity);
-                        laboratoryAssignmentModel.Laboratory = Mapper.Map<LaboratoryModel>(laboratoryEntity);
-                        laboratoryAssignmentsModels.Add(laboratoryAssignmentModel);
-                    }
+                    model.Laboratory = Mapper.Map<LaboratoryModel>(laboratoryEntity);
                 }
+                return assignmentModels;
             }
-            return laboratoryAssignmentsModels;
+            else throw new Exception();
         }
     }
 }

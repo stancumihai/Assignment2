@@ -1,8 +1,10 @@
 ﻿using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SchoolApplication.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace SchoolApplication.Controller
@@ -52,55 +54,64 @@ namespace SchoolApplication.Controller
             }
             var gradingModel = new GradingModel(gradingDto.Id, submissionmodel, gradingDto.Grade);
             GradingService.Add(gradingModel);
-            return Ok(gradingModel);
+            return StatusCode(StatusCodes.Status201Created, new { message = "Grading created", objectInfo = submissionmodel });
         }
 
         [HttpGet("{Id}")]
         public IActionResult GetById([FromRoute] int Id)
         {
-            var gradingModel = GradingService.GetById(Id);
-            if (gradingModel == null)
+            try
             {
-                return NotFound("Grading Model Not Found");
+                var gradingModel = GradingService.GetById(Id);
+                var submissionModel = gradingModel.Submission;
+                var userModel = submissionModel.Student.User;
+                var userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
+                var laboratoryModel = submissionModel.Assignment.Laboratory;
+                var laboratoryDto = new LaboratoryDto(laboratoryModel.Id, laboratoryModel.LaboratoryNumber, laboratoryModel.Date, laboratoryModel.Title, laboratoryModel.Objectives, laboratoryModel.Description); ;
+                var assignmentDto = new AssignmentDto(submissionModel.Assignment.Id, laboratoryDto, submissionModel.Assignment.DeadLine, submissionModel.Assignment.Description);
+                var studentDto = new StudentDto(submissionModel.Student.Id, userDto, submissionModel.Student.FullName, submissionModel.Student.Group, submissionModel.Student.Hobby);
+                var submissionDto = new SubmissionDto(submissionModel.Id, assignmentDto, studentDto, submissionModel.Github, submissionModel.Comment);
+                var gradingDto = new GradingDto(gradingModel.Id, submissionDto, gradingModel.Grade);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Grading Found", objectInfo = gradingDto });
+
             }
-
-            var submissionModel = gradingModel.Submission;
-            var userModel = submissionModel.Student.User;
-            var userDto = new UserDto(userModel.Id, userModel.Email, userModel.Password);
-            var laboratoryModel = submissionModel.Assignment.Laboratory;
-            var laboratoryDto = new LaboratoryDto(laboratoryModel.Id, laboratoryModel.LaboratoryNumber, laboratoryModel.Date, laboratoryModel.Title, laboratoryModel.Objectives, laboratoryModel.Description); ;
-            var assignmentDto = new AssignmentDto(submissionModel.Assignment.Id, laboratoryDto, submissionModel.Assignment.DeadLine, submissionModel.Assignment.Description);
-            var studentDto = new StudentDto(submissionModel.Student.Id, userDto, submissionModel.Student.FullName, submissionModel.Student.Group, submissionModel.Student.Hobby);
-            var submissionDto = new SubmissionDto(submissionModel.Id, assignmentDto, studentDto, submissionModel.Github, submissionModel.Comment);
-            var gradingDto = new GradingDto(gradingModel.Id, submissionDto, gradingModel.Grade);
-
-            return Ok(gradingDto);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Grading with Id " + Id + " not found" });
+            }
         }
+
 
         [HttpDelete("{Id}")]
         public IActionResult Delete([FromRoute] int Id)
         {
-            var gradingModel = GradingService.GetById(Id);
-            if (gradingModel == null)
+            try
             {
-                return NotFound("Grading Model Not Found");
+                var gradingModel = GradingService.GetById(Id);
+                GradingService.Delete(Id);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Grading Deleted" });
             }
-            GradingService.Delete(Id);
-            return Ok(gradingModel);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Grading with Id " + Id + " not found" });
+            }
         }
 
         [HttpPut("{Id}")]
         public IActionResult Update([FromRoute] int Id, [FromBody] GradingCreateDto gradingDto)
         {
-            var gradingModel = GradingService.GetById(Id);
-            if (gradingModel == null)
+            try
             {
-                return NotFound("Grading With Id " + Id + " not found");
+                var gradingModel = GradingService.GetById(Id);
+                var newGradingModel = new GradingModel(Id, gradingModel.Submission, gradingDto.Grade);
+                GradingService.Update(Id, newGradingModel);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Grading Updated", objectInfo = newGradingModel });
             }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Grading with Id " + Id + " not found" });
 
-            var newGradingModel = new GradingModel(Id, gradingModel.Submission, gradingDto.Grade);
-            GradingService.Update(Id, newGradingModel);
-            return Ok(newGradingModel);
+            }
         }
     }
 }

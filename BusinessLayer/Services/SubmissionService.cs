@@ -2,6 +2,7 @@
 using BusinessLayer.Contracts.Models;
 using DataAccess.Contracts;
 using DataAccess.Contracts.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -35,6 +36,7 @@ namespace BusinessLayer.Services
                 uof.Delete<SubmissionEntity>(submissionEntity);
                 uof.SaveChanges();
             }
+            else throw new Exception();
         }
 
         public List<SubmissionModel> GetAll()
@@ -63,7 +65,9 @@ namespace BusinessLayer.Services
         public SubmissionModel GetById(int Id)
         {
             var submissionEntity = GenericRepository.Get<SubmissionEntity>().Where(submission => submission.Id == Id).FirstOrDefault();
-
+            
+            if (submissionEntity == null) throw new Exception();
+            
             var assignmentEntity = GenericRepository.Get<AssignmentEntity>().Where(assignment => assignment.Id == submissionEntity.AssignmentId).FirstOrDefault();
             var studentEntity = GenericRepository.Get<StudentEntity>().Where(student => student.Id == submissionEntity.StudentId).FirstOrDefault();
             var userEntity = GenericRepository.Get<UserEntity>().Where(user => user.Id == studentEntity.UserId).FirstOrDefault();
@@ -90,6 +94,7 @@ namespace BusinessLayer.Services
                 uof.Update<SubmissionEntity>(newSubmissionEntity);
                 uof.SaveChanges();
             }
+            else throw new Exception();
         }
     }
 }

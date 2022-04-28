@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using BusinessLayer.Contracts;
 using BusinessLayer.Contracts.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SchoolApplication.Entities;
+using System;
 using System.Collections.Generic;
 
 namespace SchoolApplication.Controller
@@ -40,44 +42,58 @@ namespace SchoolApplication.Controller
         {
             var laboratoryModel = Mapper.Map<LaboratoryModel>(LaboratoryDto);
             LaboratoryService.Add(laboratoryModel);
-            return Ok(laboratoryModel);
+            return StatusCode(StatusCodes.Status201Created, new { message = "Laboratory Created", objectInfo = LaboratoryDto });
+
         }
 
         [HttpGet("{Id}")]
         public IActionResult GetById([FromRoute] int Id)
         {
-            var labModel = LaboratoryService.GetById(Id);
-            if (labModel == null)
+            try
             {
-                return NotFound();
+                var labModel = LaboratoryService.GetById(Id);
+                var labDto = Mapper.Map<LaboratoryModel>(labModel);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Laboratory found", objectInfo = labDto });
+
             }
-            var labDto = Mapper.Map<LaboratoryModel>(labModel);
-            return Ok(labDto);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Laboratory with Id " + Id + " Not Found" });
+
+            }
         }
 
         [HttpDelete("{Id}")]
         public IActionResult Delete([FromRoute] int Id)
         {
-            var labModel = LaboratoryService.GetById(Id);
-            if (labModel == null)
+            try
             {
-                return NotFound();
+                var labModel = LaboratoryService.GetById(Id);
+                LaboratoryService.Delete(Id);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Laboratory Deleted", objectInfo = labModel });
             }
-            LaboratoryService.Delete(Id);
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Laboratory with Id " + Id + " Not Found" });
+
+            }
         }
 
         [HttpPut("{Id}")]
         public IActionResult Update([FromRoute] int Id, [FromBody] LaboratoryDto LabDto)
         {
-            var labModel = LaboratoryService.GetById(Id);
-            if (labModel == null)
+            try
             {
-                return NotFound();
+                var labModel = LaboratoryService.GetById(Id);
+                var laboratoryUpdated = Mapper.Map<LaboratoryModel>(labModel);
+                LaboratoryService.Update(Id, laboratoryUpdated);
+                return StatusCode(StatusCodes.Status200OK, new { message = "Laboratory Updated", objectInfo = laboratoryUpdated });
             }
-            var laboratoryUpdated = Mapper.Map<LaboratoryModel>(labModel);
-            LaboratoryService.Update(Id, laboratoryUpdated);
-            return Ok();
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new { message = "Laboratory with Id " + Id + " Not Found" });
+
+            }
         }
 
         [HttpGet("Assignments/{LaboratoryId}")]

@@ -10,6 +10,12 @@
         {
 
         }
+
+        public FinalResultModel(StudentModel student)
+        {
+            Student = student;
+        }
+
         public FinalResultModel(int id, StudentModel student, string status)
         {
             Id = id;
